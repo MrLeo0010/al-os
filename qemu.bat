@@ -1,0 +1,1 @@
+qemu-system-i386 -cdrom TestAlSystem.iso -boot d -m 512M
