@@ -1,18 +1,17 @@
 #ifndef VGA_H
 #define VGA_H
 
-void vga_clear();
+#include <stdint.h>
+
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+
 void vga_putc(char c);
-void vga_write(const char* str);
 void vga_print(const char* str);
-void vga_print_color(const char* str, unsigned char color);
-void vga_setcolor(unsigned char color);
-void update_cursor();
+void vga_print_color(const char* str, uint8_t color);
+void vga_clear(void);
+void vga_put_at(char c, uint8_t color, uint16_t pos);
+void vga_set_cursor(uint16_t pos);
+uint16_t vga_get_cursor(void);
 
-extern int cursor_x;
-extern int cursor_y;
-extern unsigned short* const VGA_MEMORY;
-extern const int WIDTH;
-extern const int HEIGHT;
-
-#endif
+#endif // VGA_H

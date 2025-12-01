@@ -1,103 +1,63 @@
 #include "vga.h"
-#include <stddef.h>
 
-/* globals accessible from other modules */
-int cursor_x = 0;
-int cursor_y = 0;
-unsigned short* const VGA_MEMORY = (unsigned short*)0xB8000;
-const int WIDTH = 80;
-const int HEIGHT = 25;
+unsigned char vga_color = 0x07;
+static uint16_t* const vga_buffer = (uint16_t*)0xB8000;
+static uint16_t cursor_pos = 0;
 
-static unsigned char current_color = 0x07; // default gray
-
-/* outb helper */
-static inline void outb(unsigned short port, unsigned char val) {
-    __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
+void vga_put_at(char c, uint8_t color, uint16_t pos) {
+    vga_buffer[pos] = ((uint16_t)color << 8) | c;
 }
 
-/* update hardware cursor */
-void update_cursor() {
-    unsigned short pos = cursor_y * WIDTH + cursor_x;
-    outb(0x3D4, 0x0F);
-    outb(0x3D5, (unsigned char)(pos & 0xFF));
-    outb(0x3D4, 0x0E);
-    outb(0x3D5, (unsigned char)((pos >> 8) & 0xFF));
+void vga_set_cursor(uint16_t pos) {
+    cursor_pos = pos;
+    uint8_t low = pos & 0xFF;
+    uint8_t high = (pos >> 8) & 0xFF;
+
+    __asm__ volatile ("outb %0, %1" : : "a"( (unsigned char)0x0F ), "Nd"(0x3D4));
+    __asm__ volatile ("outb %0, %1" : : "a"( low ), "Nd"(0x3D5));
+    __asm__ volatile ("outb %0, %1" : : "a"( (unsigned char)0x0E ), "Nd"(0x3D4));
+    __asm__ volatile ("outb %0, %1" : : "a"( high ), "Nd"(0x3D5));
 }
 
-/* clear screen */
-void vga_clear() {
-    for (int y = 0; y < HEIGHT; y++)
-        for (int x = 0; x < WIDTH; x++)
-            VGA_MEMORY[y * WIDTH + x] = ((unsigned short)current_color << 8) | ' ';
-    cursor_x = 0;
-    cursor_y = 0;
-    update_cursor();
+uint16_t vga_get_cursor(void) {
+    return cursor_pos;
 }
 
-/* set current color */
-void vga_setcolor(unsigned char color) {
-    current_color = color;
-}
-
-/* scroll up one line */
-static void scroll() {
-    for (int y = 1; y < HEIGHT; y++)
-        for (int x = 0; x < WIDTH; x++)
-            VGA_MEMORY[(y - 1) * WIDTH + x] = VGA_MEMORY[y * WIDTH + x];
-
-    for (int x = 0; x < WIDTH; x++)
-        VGA_MEMORY[(HEIGHT - 1) * WIDTH + x] = ((unsigned short)current_color << 8) | ' ';
-
-    if (cursor_y > 0) cursor_y = HEIGHT - 1;
-    update_cursor();
-}
-
-/* put single character (handles newline, wrap, scroll) */
 void vga_putc(char c) {
     if (c == '\n') {
-        cursor_x = 0;
-        cursor_y++;
-    } else if (c == '\r') {
-        cursor_x = 0;
-    } else if (c == '\b') {
-        if (cursor_x > 0) {
-            cursor_x--;
-            VGA_MEMORY[cursor_y * WIDTH + cursor_x] = ((unsigned short)current_color << 8) | ' ';
-        } else if (cursor_y > 0) {
-            cursor_y--;
-            cursor_x = WIDTH - 1;
-            VGA_MEMORY[cursor_y * WIDTH + cursor_x] = ((unsigned short)current_color << 8) | ' ';
-        }
+        cursor_pos += VGA_WIDTH - (cursor_pos % VGA_WIDTH);
     } else {
-        VGA_MEMORY[cursor_y * WIDTH + cursor_x] = ((unsigned short)current_color << 8) | c;
-        cursor_x++;
+        vga_put_at(c, vga_color, cursor_pos++);
     }
-
-    if (cursor_x >= WIDTH) {
-        cursor_x = 0;
-        cursor_y++;
+    if (cursor_pos >= VGA_WIDTH * VGA_HEIGHT) {
+        for (int y = 1; y < VGA_HEIGHT; y++) {
+            for (int x = 0; x < VGA_WIDTH; x++) {
+                vga_buffer[(y-1)*VGA_WIDTH + x] = vga_buffer[y*VGA_WIDTH + x];
+            }
+        }
+        for (int x = 0; x < VGA_WIDTH; x++) {
+            vga_put_at(' ', vga_color, (VGA_HEIGHT-1)*VGA_WIDTH + x);
+        }
+        cursor_pos -= VGA_WIDTH;
     }
-    if (cursor_y >= HEIGHT) {
-        scroll();
-    }
-    update_cursor();
+    vga_set_cursor(cursor_pos);
 }
 
-/* write string without auto newline */
-void vga_write(const char* str) {
-    while (*str) vga_putc(*str++);
-}
-
-/* write string then newline */
 void vga_print(const char* str) {
-    vga_write(str);
-    vga_putc('\n');
+    for (int i = 0; str[i]; i++)
+        vga_putc(str[i]);
 }
 
-/* write colored string (temporarily change color) */
-void vga_print_color(const char* str, unsigned char color) {
-    unsigned char old = current_color;
-    vga_setcolor(color);
-    vga_write(str);
-    vga_setcolor(old);
+void vga_print_color(const char* str, uint8_t color) {
+    uint8_t old_color = vga_color;
+    vga_color = color;
+    vga_print(str);
+    vga_color = old_color;
+}
+
+void vga_clear(void) {
+    for (int i = 0; i < VGA_WIDTH*VGA_HEIGHT; i++)
+        vga_put_at(' ', vga_color, i);
+    cursor_pos = 0;
+    vga_set_cursor(cursor_pos);
 }
