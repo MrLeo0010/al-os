@@ -83,8 +83,8 @@ Runs on real hardware in **BIOS mode**.
 
 ## Boot support
 
-* BIOS — supported
-* UEFI — not yet
+* BIOS - supported
+* UEFI - not yet
 
 ---
 
