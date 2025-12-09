@@ -41,6 +41,16 @@
 
 ---
 
+## Сайт проекта
+
+У данного проекта есть свой сайт, там инфы нету но можно скачать систему или исходный код. В общем не особо нужно, но на всякий добавил, это демо версия сайта так что в будущем обновлю
+
+https://al-mus.github.io/al-os
+
+[![Website](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Website\&color=green)](https://al-mus.github.io/al-os)
+
+---
+
 ## Releases
 
 ➡ [![Releases](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Releases\&color=blue)](https://github.com/Al-Mus/al-os/releases)
@@ -109,6 +119,16 @@ Developed by **Al-Mus**
 
 * BIOS - ✔ supported
 * UEFI - ✘ not yet
+
+---
+
+## Project Website
+
+This project has its own website. There's no information there, but you can download the system or source code. It's not really necessary, but I've included it just in case. This is a demo version of the site, so I'll update it in the future.
+
+https://al-mus.github.io/al-os
+
+[![Website](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Website\&color=green)](https://al-mus.github.io/al-os)
 
 ---
 
