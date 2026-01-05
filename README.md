@@ -57,6 +57,13 @@ https://al-mus.github.io/al-os
 
 ---
 
+## Build
+
+Ubuntu/Debian:
+sudo apt update && sudo apt install -y build-essential gcc-i686-linux-gnu gcc-14-i686-linux-gnu libc6-dev-i386 binutils nasm grub-pc-bin grub-common xorriso && make iso
+
+---
+
 ## Запуск
 
 Инструкция по запуску появится позже.
@@ -135,6 +142,13 @@ https://al-mus.github.io/al-os
 ## Releases
 
 ➡ [![Releases](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Releases\&color=blue)](https://github.com/Al-Mus/al-os/releases)
+
+---
+
+## Build
+
+Ubuntu/Debian:
+sudo apt update && sudo apt install -y build-essential gcc-i686-linux-gnu gcc-14-i686-linux-gnu libc6-dev-i386 binutils nasm grub-pc-bin grub-common xorriso && make iso
 
 ---
 
