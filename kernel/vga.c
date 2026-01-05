@@ -4,25 +4,19 @@ unsigned char vga_color = 0x07;
 static uint16_t* const vga_buffer = (uint16_t*)0xB8000;
 static uint16_t cursor_pos = 0;
 
-static inline void outb(uint16_t port, uint8_t val) {
-    __asm__ volatile (
-        "outb %0, %1"
-        :
-        : "a"(val), "Nd"(port)
-    );
-}
-
 void vga_put_at(char c, uint8_t color, uint16_t pos) {
     vga_buffer[pos] = ((uint16_t)color << 8) | c;
 }
 
 void vga_set_cursor(uint16_t pos) {
     cursor_pos = pos;
+    uint8_t low = pos & 0xFF;
+    uint8_t high = (pos >> 8) & 0xFF;
 
-    outb((uint16_t)0x3D4, (uint8_t)0x0F);
-    outb((uint16_t)0x3D5, (uint8_t)(pos & 0xFF));
-    outb((uint16_t)0x3D4, (uint8_t)0x0E);
-    outb((uint16_t)0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    __asm__ volatile ("outb %0, %1" : : "a"( (unsigned char)0x0F ), "Nd"(0x3D4));
+    __asm__ volatile ("outb %0, %1" : : "a"( low ), "Nd"(0x3D5));
+    __asm__ volatile ("outb %0, %1" : : "a"( (unsigned char)0x0E ), "Nd"(0x3D4));
+    __asm__ volatile ("outb %0, %1" : : "a"( high ), "Nd"(0x3D5));
 }
 
 uint16_t vga_get_cursor(void) {
