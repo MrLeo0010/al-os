@@ -4,7 +4,7 @@
 #include "vga.h"
 #include <stdbool.h>
 
-#define HISTORY_SIZE 8
+#define HISTORY_SIZE 10
 #define HISTORY_ENTRY_LEN 128
 #define INPUT_BUFFER_SIZE 256
 

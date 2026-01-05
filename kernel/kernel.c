@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include "panic.h"
 #include "vga.h"
 #include "keyboard.h"
 #include "fs.h"
@@ -6,9 +7,9 @@
 #include "string.h"
 #include "nano.h"
 
-#define MAX_CMD_LEN 256
+#define MAX_CMD_LEN 128
 
-#define HISTORY_SIZE 8
+#define HISTORY_SIZE 10
 #define HISTORY_LEN MAX_CMD_LEN
 char user[32] = "root";
 
@@ -174,6 +175,7 @@ static const struct { const char* cmd; const char* desc; } help_table[] = {
     {"colorbar", "Display VGA color palette"},
     {"memtest",  "Simple memory write/read test"},
     {"nano", "Simple text editor"},
+    {"panic", "Trigger kernel panic"},
 };
 
 static void cmd_help(const char* arg) {
@@ -641,18 +643,25 @@ void kernel_main(void)
         }
         else if (strcmp(cmd, "reboot") == 0) {
             vga_print_color("Rebooting...", 0x0C);
-            for (volatile int i = 0; i < 100000000; i++) {
-            }
-            asm volatile ("ljmp $0, $0" ::: "memory");
-            for(;;) asm("hlt");
+            for (volatile int i = 0; i < 100000000; i++);
+            asm volatile("cli");
+            asm volatile("mov $0xFE, %%al; out %%al, $0x64" ::: "eax");
+
+            asm volatile("mov $0x02, %%al; out %%al, $0x92" ::: "eax");
+            asm volatile("mov $0x2000, %%ax; mov $0xB004, %%dx; out %%ax, %%dx" ::: "eax", "edx");
+
+            while (1) asm("hlt");
         }
         else if (strcmp(cmd, "shutdown") == 0 || strcmp(cmd, "poweroff") == 0) {
             vga_print_color("SHUTTING DOWN...", 0x0C);
             for (volatile int i = 0; i < 100000000; i++);
-            outw(0x604, 0x2000);
-            outw(0xB004, 0x2000);
-            outb(0x64, 0xFE);
-            for(;;) asm("hlt");
+
+            asm volatile("cli");
+            asm volatile("mov $0x2000, %%ax; mov $0x604, %%dx; out %%ax, %%dx" ::: "eax", "edx");
+            asm volatile("mov $0x2000, %%ax; mov $0xB004, %%dx; out %%ax, %%dx" ::: "eax", "edx");
+
+            asm volatile("mov $0xFE, %%al; out %%al, $0x64" ::: "eax");
+            while (1) asm("hlt");
         }
         else if (strcmp(cmd, "whoami") == 0)    cmd_whoami();
         else if (strcmp(cmd, "date") == 0)      cmd_date();
@@ -662,6 +671,13 @@ void kernel_main(void)
             if (args[0]) nano_edit(args);
             else vga_print_color("Usage: nano <file>\n", 0x0C);
             }
+        else if (strcmp(cmd, "panic") == 0) {
+            if (args && args[0]) {
+                panic("Shell", args, __func__);
+            } else {
+                panic("Shell", "User requested panic", __func__);
+            }
+        }
         else vga_print_color("Command not found\n", 0x0C);
     }
 }

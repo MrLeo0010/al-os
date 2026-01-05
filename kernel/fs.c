@@ -1,6 +1,7 @@
 #include "fs.h"
 #include "string.h"
 #include "vga.h"
+#include "panic.h"
 
 static fs_node fs_nodes[MAX_NODES];
 static int node_count = 0;
@@ -10,7 +11,10 @@ fs_node* fs_current = NULL;
 char current_path[128] = "";
 
 static fs_node* create_node(const char* name, fs_type type, fs_node* parent) {
-    if (node_count >= MAX_NODES) return NULL;
+    if (node_count >= MAX_NODES) {
+        panic("Filesystem", "too many nodes (node pool exhausted)", __func__);
+    }
+
     fs_node* n = &fs_nodes[node_count++];
     
     int i = 0;
@@ -105,16 +109,8 @@ void fs_init(void) {
 
     fs_mkdir("bin");
     fs_mkdir("dev");
-    fs_mkdir("etc");
-    fs_mkdir("lib");
-    fs_mkdir("tmp");
-    fs_mkdir("var");
     fs_mkdir("home");
     fs_mkdir("mnt");
-    fs_mkdir("proc");
-    fs_mkdir("sys");
-    fs_mkdir("usr");
-    fs_mkdir("boot");
 }
 
 void fs_list(const char* path) {
@@ -191,12 +187,20 @@ int fs_mkdir(const char* path) {
         if (!child || child->type != FS_DIR) return -1;
         parent = child;
     }
+
     if (find_child(parent, segs[n-1])) return -1;
-    if (parent->child_count >= MAX_CHILDREN) { vga_print_color("Directory full\n", 0x0C); return -1; }
+    if (parent->child_count >= MAX_CHILDREN) {
+        vga_print_color("Directory full\n", 0x0C);
+        return -1;
+    }
 
     fs_node* d = create_node(segs[n-1], FS_DIR, parent);
-    if (d) { parent->children[parent->child_count++] = d; return 0; }
-    return -1;
+    if (!d) {
+        panic("Filesystem", "failed to create directory node", __func__);
+    }
+
+    parent->children[parent->child_count++] = d;
+    return 0;
 }
 
 int fs_cd(const char* path) {
@@ -237,12 +241,20 @@ int fs_touch(const char* path) {
         if (!child || child->type != FS_DIR) return -1;
         parent = child;
     }
+
     if (find_child(parent, segs[n-1])) return -1;
-    if (parent->child_count >= MAX_CHILDREN) { vga_print_color("Directory full\n", 0x0C); return -1; }
+    if (parent->child_count >= MAX_CHILDREN) {
+        vga_print_color("Directory full\n", 0x0C);
+        return -1;
+    }
 
     fs_node* f = create_node(segs[n-1], FS_FILE, parent);
-    if (f) { parent->children[parent->child_count++] = f; return 0; }
-    return -1;
+    if (!f) {
+        panic("Filesystem", "failed to create file node", __func__);
+    }
+
+    parent->children[parent->child_count++] = f;
+    return 0;
 }
 
 int fs_write(const char* path, const char* text) {

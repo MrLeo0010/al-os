@@ -12,7 +12,8 @@ OBJS = boot/kernel_entry.o kernel/kernel.o \
        kernel/keyboard.o \
        kernel/fs.o \
        kernel/vga.o kernel/string.o \
-	   kernel/nano.o
+	   kernel/nano.o \
+	   kernel/panic.o
 
 all: $(TARGET)
 
@@ -24,7 +25,7 @@ kernel/%.o: kernel/%.c
 	
 nano.o: nano.c nano.h
 	$(CC) $(CFLAGS) -c $< -o $@
-	
+
 $(TARGET): $(OBJS)
 	$(LD) -T linker.ld -m elf_i386 -o $(TARGET) $(OBJS)
 
@@ -34,6 +35,9 @@ iso: $(TARGET)
 	printf "set timeout=1\nset default=0\nmenuentry \"Boot Al-OS\" {\n    multiboot /boot/kernel.elf\n    boot\n}\n" > iso/boot/grub/grub.cfg
 	grub-mkrescue -o $(ISO) iso
 
-clean:
+clean-all:
 	rm -f $(OBJS) $(TARGET) $(ISO)
 	rm -rf iso
+
+clean:
+	rm -f $(OBJS) $(TARGET)
