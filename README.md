@@ -22,6 +22,7 @@
 ## Автор
 
 Создатель проекта - **Al-Mus**
+Создатель форка - **MrLeo0010**
 
 ---
 
@@ -53,7 +54,7 @@ https://al-mus.github.io/al-os
 
 ## Releases
 
-➡ [![Releases](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Releases\&color=blue)](https://github.com/Al-Mus/al-os/releases)
+➡ [![Releases](https://img.shields.io/github/v/release/MrLeo0010/al-os?label=Releases\&color=blue)](https://github.com/MrLeo0010/al-os/releases)
 
 ---
 
@@ -108,6 +109,7 @@ The system is in active development and new changes appear over time.
 ## Author
 
 Developed by **Al-Mus**
+Forked by **MrLeo0010**
 
 ---
 
@@ -131,21 +133,21 @@ Developed by **Al-Mus**
 
 This project has its own website. There's no information there, but you can download the system or source code. It's not really necessary, but I've included it just in case. This is a demo version of the site, so I'll update it in the future.
 
-https://al-mus.github.io/al-os
+https://MrLeo0010.github.io/al-os
 
-[![Website](https://img.shields.io/badge/%F0%9F%8C%90_Website-AL--OS-green?style=flat&logo=github)](https://al-mus.github.io/al-os)
+[![Website](https://img.shields.io/badge/%F0%9F%8C%90_Website-AL--OS-green?style=flat&logo=github)](https://MrLeo0010.github.io/al-os)
 
 ---
 
 ## Releases
 
-➡ [![Releases](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Releases\&color=blue)](https://github.com/Al-Mus/al-os/releases)
+➡ [![Releases](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Releases\&color=blue)](https://github.com/MrLeo0010/al-os/releases)
 
 ---
 
 ## Build
 
-Ubuntu/Debian:
+Ubuntu/Debian 13:
 sudo apt update && sudo apt install -y build-essential gcc-i686-linux-gnu gcc-14-i686-linux-gnu libc6-dev-i386 binutils nasm grub-pc-bin grub-common xorriso && make iso
 
 ---
