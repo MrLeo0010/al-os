@@ -6,7 +6,7 @@ CFLAGS = -ffreestanding -O2 -Wall -Wextra -m32 -nostdlib -Ikernel
 ASFLAGS = -f elf32
 
 TARGET = kernel.elf
-ISO = AlSystem.iso
+ISO = AL-OS.iso
 
 OBJS = boot/kernel_entry.o kernel/kernel.o \
        kernel/drivers/keyboard.o \
@@ -54,5 +54,13 @@ clean-all:
 clean:
 	rm -f $(OBJS) $(TARGET)
 	rm -rf iso
+
+## need to add qemu to the docker container
+#run:
+#	qemu-system-i386 \
+#  	-m 512M \
+#  	-cdrom $(ISO) \
+#  	-boot d \
+#  	-display gtk
 
 .PHONY: all iso clean clean-all run
