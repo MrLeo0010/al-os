@@ -57,8 +57,9 @@ clean:
 
 run:
 	qemu-system-i386 \
- 	-m 512M \
+ 	-m 64M \
  	-cdrom $(ISO) \
+    -drive file=fat32_min_4k.img,format=raw \
  	-boot d \
  	-display gtk
 
