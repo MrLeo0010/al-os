@@ -57,10 +57,10 @@ clean:
 
 run:
 	qemu-system-i386 \
- 	-m 64M \
- 	-cdrom $(ISO) \
-    -drive file=fat32_min_4k.img,format=raw \
- 	-boot d \
- 	-display gtk
+		-m 64M \
+		-cdrom AL-OS.iso \
+		$(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img,format=raw,) \
+		-boot d \
+		-display gtk
 
 .PHONY: all iso clean clean-all run
