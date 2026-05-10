@@ -43,16 +43,6 @@
 
 ---
 
-## Сайт проекта
-
-У данного проекта есть свой сайт, там инфы нету но можно скачать систему или исходный код. В общем не особо нужно, но на всякий добавил, это демо версия сайта так что в будущем обновлю
-
-https://al-mus.github.io/al-os
-
-[![Website](https://img.shields.io/badge/%F0%9F%8C%90_Website-AL--OS-green?style=flat&logo=github)](https://al-mus.github.io/al-os)
-
----
-
 ## Releases
 
 ➡ [![Releases](https://img.shields.io/github/v/release/MrLeo0010/al-os?label=Releases\&color=blue)](https://github.com/MrLeo0010/al-os/releases)

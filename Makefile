@@ -55,12 +55,11 @@ clean:
 	rm -f $(OBJS) $(TARGET)
 	rm -rf iso
 
-## need to add qemu to the docker container
-#run:
-#	qemu-system-i386 \
-#  	-m 512M \
-#  	-cdrom $(ISO) \
-#  	-boot d \
-#  	-display gtk
+run:
+	qemu-system-i386 \
+ 	-m 512M \
+ 	-cdrom $(ISO) \
+ 	-boot d \
+ 	-display gtk
 
 .PHONY: all iso clean clean-all run

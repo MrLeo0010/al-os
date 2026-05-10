@@ -34,16 +34,6 @@ Forked by **MrLeo0010**
 
 ---
 
-## Project Website
-
-This project has its own website. There's no information there, but you can download the system or source code. It's not really necessary, but I've included it just in case. This is a demo version of the site, so I'll update it in the future.
-
-https://MrLeo0010.github.io/al-os
-
-[![Website](https://img.shields.io/badge/%F0%9F%8C%90_Website-AL--OS-green?style=flat&logo=github)](https://MrLeo0010.github.io/al-os)
-
----
-
 ## Releases
 
 ➡ [![Releases](https://img.shields.io/github/v/release/Al-Mus/al-os?label=Releases\&color=blue)](https://github.com/MrLeo0010/al-os/releases)
@@ -83,5 +73,3 @@ Forks, ideas and pull requests - welcome.
 The order of ideas is set by priority. 1 is what I need and want absolutely, 2 is desirable, the rest is with a low priority.
 
 ---
-
-
