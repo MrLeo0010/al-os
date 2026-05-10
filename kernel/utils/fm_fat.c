@@ -1,7 +1,6 @@
 #include "fm_fat.h"
 #include "../drivers/vga.h"
-#include "../drivers/keyboard.h"
-#include "../fs/fat.h"
+#include "../fs/fs.h"
 #include "string.h"
 #include "ports.h"
 
@@ -138,12 +137,12 @@ static void fm_draw_dialog_box(int x, int y, int w, int h, const char* title, ui
         fm_put_char(x + i, y, '-', color);
     }
     fm_put_char(x + w - 1, y, '+', color);
-    
+
     if (title) {
         int title_x = x + (w - (int)strlen(title)) / 2;
         fm_put_string(title_x, y, title, COL_DIALOG_TITLE);
     }
-    
+
     for (int row = 1; row < h - 1; row++) {
         fm_put_char(x, y + row, '|', color);
         for (int col = 1; col < w - 1; col++) {
@@ -151,7 +150,7 @@ static void fm_draw_dialog_box(int x, int y, int w, int h, const char* title, ui
         }
         fm_put_char(x + w - 1, y + row, '|', color);
     }
-    
+
     fm_put_char(x, y + h - 1, '+', color);
     for (int i = 1; i < w - 1; i++) {
         fm_put_char(x + i, y + h - 1, '-', color);
@@ -167,67 +166,67 @@ static int fm_input_dialog(const char* title, const char* prompt, char* buffer, 
     int dialog_h = 7;
     int dialog_x = (VGA_WIDTH - dialog_w) / 2;
     int dialog_y = (VGA_HEIGHT - dialog_h) / 2;
-    
+
     fm_draw_dialog_box(dialog_x, dialog_y, dialog_w, dialog_h, title, COL_DIALOG_BG);
-    
+
     fm_put_string(dialog_x + 2, dialog_y + 2, prompt, COL_DIALOG_BG);
-    
+
     int input_x = dialog_x + 2;
     int input_y = dialog_y + 3;
     int input_w = dialog_w - 4;
-    
+
     for (int i = 0; i < input_w; i++) {
         fm_put_char(input_x + i, input_y, ' ', COL_INPUT);
     }
-    
+
     fm_put_string(dialog_x + 2, dialog_y + 5, "Enter=OK  ESC=Cancel", 0x17);
-    
+
     int pos = 0;
     buffer[0] = '\0';
-    
+
     vga_set_cursor(input_y * VGA_WIDTH + input_x);
-    
+
     fm_wait_key_release();
-    
+
     while (1) {
         for (int i = 0; i < input_w; i++) {
             char c = (i < pos) ? buffer[i] : ' ';
             fm_put_char(input_x + i, input_y, c, COL_INPUT);
         }
-        
+
         vga_set_cursor(input_y * VGA_WIDTH + input_x + pos);
-        
+
         uint8_t sc = fm_wait_key();
-        
+
         if (sc == KEY_ESC) {
             fm_wait_key_release();
             return 0;
         }
-        
+
         if (sc == KEY_ENTER) {
             fm_wait_key_release();
             return 1;
         }
-        
+
         if (sc == 0x0E && pos > 0) {
             pos--;
             buffer[pos] = '\0';
             continue;
         }
-        
+
         char c = 0;
-        
+
         static const char scancode_to_char[] = {
             0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0, 0,
             'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 0, 0,
             'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\',
             'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' '
         };
-        
+
         if (sc < sizeof(scancode_to_char)) {
             c = scancode_to_char[sc];
         }
-        
+
         if (c && pos < max_len - 1) {
             buffer[pos++] = c;
             buffer[pos] = '\0';
@@ -245,17 +244,17 @@ static int fm_get_file_size(fs_node* node) {
 static void fm_refresh_panel(fm_panel* panel) {
     panel->file_count = 0;
     panel->has_parent = 0;
-    
+
     if (!panel->current_dir) return;
-    
+
     if (panel->current_dir->parent != NULL) {
         panel->has_parent = 1;
     }
-    
+
     for (int i = 0; i < panel->current_dir->child_count && panel->file_count < FM_MAX_FILES; i++) {
         panel->files[panel->file_count++] = panel->current_dir->children[i];
     }
-    
+
     int total = panel->file_count + (panel->has_parent ? 1 : 0);
     if (panel->selected >= total) {
         panel->selected = total > 0 ? total - 1 : 0;
@@ -270,19 +269,19 @@ static void fm_build_path(fm_panel* panel) {
         strcpy(panel->path, "/");
         return;
     }
-    
+
     char parts[8][MAX_NAME_LEN];
     int depth = 0;
     fs_node* node = panel->current_dir;
-    
+
     while (node && node->parent && depth < 8) {
         strcpy(parts[depth++], node->name);
         node = node->parent;
     }
-    
+
     panel->path[0] = '/';
     panel->path[1] = '\0';
-    
+
     for (int i = depth - 1; i >= 0; i--) {
         if (strlen(panel->path) > 1) {
             strcat(panel->path, "/");
@@ -322,13 +321,13 @@ static fs_node* fm_get_selected_node(fm_panel* panel) {
 
 static void fm_draw_panel(fm_panel* panel, int start_x, int is_active) {
     uint8_t border_col = is_active ? COL_BORDER_ACT : COL_BORDER;
-    
+
     fm_put_char(start_x, 0, '+', border_col);
     for (int i = 1; i < FM_PANEL_WIDTH - 1; i++) {
         fm_put_char(start_x + i, 0, '-', border_col);
     }
     fm_put_char(start_x + FM_PANEL_WIDTH - 1, 0, '+', border_col);
-    
+
     char title[FM_PANEL_WIDTH - 4];
     int path_len = strlen(panel->path);
     if (path_len > FM_PANEL_WIDTH - 6) {
@@ -337,43 +336,43 @@ static void fm_draw_panel(fm_panel* panel, int start_x, int is_active) {
     } else {
         strcpy(title, panel->path);
     }
-    
+
     int title_x = start_x + (FM_PANEL_WIDTH - (int)strlen(title)) / 2;
     fm_put_string(title_x, 0, title, COL_HEADER);
-    
+
     fm_put_char(start_x, 1, '|', border_col);
     fm_put_string_n(start_x + 1, 1, " Name", 24, COL_HEADER);
     fm_put_string_n(start_x + 25, 1, "Size", 12, COL_HEADER);
     fm_put_char(start_x + FM_PANEL_WIDTH - 1, 1, '|', border_col);
-    
+
     fm_put_char(start_x, 2, '+', border_col);
     for (int i = 1; i < FM_PANEL_WIDTH - 1; i++) {
         fm_put_char(start_x + i, 2, '-', border_col);
     }
     fm_put_char(start_x + FM_PANEL_WIDTH - 1, 2, '+', border_col);
-    
+
     int visible_lines = FM_PANEL_HEIGHT - 1;
     int total_items = panel->file_count + (panel->has_parent ? 1 : 0);
-    
+
     if (panel->selected < panel->scroll) {
         panel->scroll = panel->selected;
     }
     if (panel->selected >= panel->scroll + visible_lines) {
         panel->scroll = panel->selected - visible_lines + 1;
     }
-    
+
     for (int line = 0; line < visible_lines; line++) {
         int y = 3 + line;
         int idx = panel->scroll + line;
-        
+
         fm_put_char(start_x, y, '|', border_col);
-        
+
         if (idx < total_items) {
             int is_selected = (idx == panel->selected);
             uint8_t color;
             char name[32];
             char size_str[16];
-            
+
             if (panel->has_parent && idx == 0) {
                 strcpy(name, "[..]");
                 strcpy(size_str, "<UP>");
@@ -381,7 +380,7 @@ static void fm_draw_panel(fm_panel* panel, int start_x, int is_active) {
             } else {
                 int file_idx = idx - (panel->has_parent ? 1 : 0);
                 fs_node* node = panel->files[file_idx];
-                
+
                 if (node->type == FS_DIR) {
                     name[0] = '[';
                     strncpy(name + 1, node->name, 28);
@@ -398,29 +397,29 @@ static void fm_draw_panel(fm_panel* panel, int start_x, int is_active) {
                     color = is_selected ? COL_SELECTED : COL_FILE;
                 }
             }
-            
+
             if (is_selected) {
                 for (int i = 1; i < FM_PANEL_WIDTH - 1; i++) {
                     fm_put_char(start_x + i, y, ' ', color);
                 }
             }
-            
+
             fm_put_string_n(start_x + 1, y, name, 24, color);
             fm_put_string_n(start_x + 25, y, size_str, 12, color);
         } else {
             fm_put_string_n(start_x + 1, y, "", FM_PANEL_WIDTH - 2, COL_FILE);
         }
-        
+
         fm_put_char(start_x + FM_PANEL_WIDTH - 1, y, '|', border_col);
     }
-    
+
     int bottom_y = 3 + visible_lines;
     fm_put_char(start_x, bottom_y, '+', border_col);
     for (int i = 1; i < FM_PANEL_WIDTH - 1; i++) {
         fm_put_char(start_x + i, bottom_y, '-', border_col);
     }
     fm_put_char(start_x + FM_PANEL_WIDTH - 1, bottom_y, '+', border_col);
-    
+
     char info[20];
     itoa(panel->file_count, info, 10);
     strcat(info, " items");
@@ -429,31 +428,31 @@ static void fm_draw_panel(fm_panel* panel, int start_x, int is_active) {
 
 static void fm_draw_fkeys(void) {
     int y = VGA_HEIGHT - 1;
-    
+
     for (int x = 0; x < VGA_WIDTH; x++) {
         fm_put_char(x, y, ' ', COL_FKEYS);
     }
-    
+
     // F1-Help F2-Rename F3-View F4-Edit F5-Copy F6-Move F7-MkDir F8-Del F9-Touch F10-Quit
     const struct { int num; const char* name; } keys[] = {
         {1, "Help"}, {2, "Ren"}, {3, "View"}, {4, "Edit"}, {5, "Copy"},
         {6, "Move"}, {7, "MkDir"}, {8, "Del"}, {9, "Touch"}, {10, "Quit"}
     };
-    
+
     int x = 0;
     for (int i = 0; i < 10; i++) {
         char num_str[4];
         itoa(keys[i].num, num_str, 10);
-        
+
         for (int j = 0; num_str[j]; j++) {
             fm_put_char(x++, y, num_str[j], COL_FKEYS_NUM);
         }
-        
+
         const char* name = keys[i].name;
         while (*name && x < (i + 1) * 8) {
             fm_put_char(x++, y, *name++, COL_FKEYS);
         }
-        
+
         while (x < (i + 1) * 8 && x < VGA_WIDTH) {
             fm_put_char(x++, y, ' ', COL_FKEYS);
         }
@@ -482,9 +481,9 @@ static void fm_draw(void) {
 static void fm_enter_dir(fm_panel* panel) {
     int total = panel->file_count + (panel->has_parent ? 1 : 0);
     if (panel->selected >= total) return;
-    
+
     fs_node* target = NULL;
-    
+
     if (panel->has_parent && panel->selected == 0) {
         target = panel->current_dir->parent;
     } else {
@@ -493,7 +492,7 @@ static void fm_enter_dir(fm_panel* panel) {
             target = panel->files[idx];
         }
     }
-    
+
     if (target && target->type == FS_DIR) {
         panel->current_dir = target;
         panel->selected = 0;
@@ -509,14 +508,14 @@ static void fm_enter_dir(fm_panel* panel) {
 static void fm_show_help(void) {
     vga_clear();
     vga_print_color("=============== AL-OS File Manager Help ===============\n\n", 0x0E);
-    
+
     vga_print_color("Navigation:\n", 0x0B);
     vga_print_color("  Up/Down      - Move selection\n", 0x07);
     vga_print_color("  Enter        - Enter directory / View file\n", 0x07);
     vga_print_color("  Tab          - Switch between panels\n", 0x07);
     vga_print_color("  Home/End     - Go to first/last item\n", 0x07);
     vga_print_color("  PgUp/PgDn    - Page up/down\n", 0x07);
-    
+
     vga_print_color("\nFunction Keys:\n", 0x0B);
     vga_print_color("  F1  - This help\n", 0x07);
     vga_print_color("  F2  - Rename file/directory\n", 0x07);
@@ -528,13 +527,13 @@ static void fm_show_help(void) {
     vga_print_color("  F8  - Delete file/directory\n", 0x07);
     vga_print_color("  F9  - Create new file (touch)\n", 0x07);
     vga_print_color("  F10 - Exit (or ESC)\n", 0x07);
-    
+
     vga_print_color("\n\nPress any key to return...", 0x0A);
-    
+
     fm_wait_key_release();
     fm_wait_key();
     fm_wait_key_release();
-    
+
     strcpy(fm_status, "Ready");
 }
 
@@ -542,21 +541,21 @@ static void fm_show_help(void) {
 static void fm_view_file(void) {
     fm_panel* panel = fm_get_active();
     fs_node* node = fm_get_selected_node(panel);
-    
+
     if (!node || node->type != FS_FILE) {
         strcpy(fm_status, "Cannot view: not a file");
         return;
     }
-    
+
     vga_clear();
     vga_print_color("=== Viewing: ", 0x0E);
     vga_print_color(node->name, 0x0F);
     vga_print_color(" ===\n\n", 0x0E);
-    
+
     const char* content = node->content;
     int line = 0;
     int lines_per_page = VGA_HEIGHT - 4;
-    
+
     while (*content) {
         vga_putc(*content);
         if (*content == '\n') {
@@ -572,12 +571,12 @@ static void fm_view_file(void) {
         }
         content++;
     }
-    
+
     vga_print_color("\n\n-- Press any key to return --", 0x0B);
     fm_wait_key_release();
     fm_wait_key();
     fm_wait_key_release();
-    
+
     strcpy(fm_status, "Viewed: ");
     strcat(fm_status, node->name);
 }
@@ -586,14 +585,14 @@ static void fm_view_file(void) {
 static void fm_rename(void) {
     fm_panel* panel = fm_get_active();
     fs_node* node = fm_get_selected_node(panel);
-    
+
     if (!node) {
         strcpy(fm_status, "Nothing to rename");
         return;
     }
-    
+
     char new_name[MAX_NAME_LEN];
-    
+
     if (fm_input_dialog(" Rename ", "Enter new name:", new_name, MAX_NAME_LEN)) {
         if (new_name[0]) {
             for (int i = 0; i < panel->current_dir->child_count; i++) {
@@ -603,11 +602,11 @@ static void fm_rename(void) {
                     return;
                 }
             }
-            
+
             char old_name[MAX_NAME_LEN];
             strcpy(old_name, node->name);
             strcpy(node->name, new_name);
-            
+
             strcpy(fm_status, "Renamed: ");
             strcat(fm_status, old_name);
             strcat(fm_status, " -> ");
@@ -618,16 +617,16 @@ static void fm_rename(void) {
     } else {
         strcpy(fm_status, "Rename cancelled");
     }
-    
+
     fm_refresh_panel(panel);
 }
 
 // F9 - Touch (create file)
 static void fm_touch(void) {
     fm_panel* panel = fm_get_active();
-    
+
     char filename[MAX_NAME_LEN];
-    
+
     if (fm_input_dialog(" Create File ", "Enter filename:", filename, MAX_NAME_LEN)) {
         if (filename[0]) {
             for (int i = 0; i < panel->current_dir->child_count; i++) {
@@ -636,17 +635,17 @@ static void fm_touch(void) {
                     return;
                 }
             }
-            
+
             fs_node* old_current = fs_current;
             fs_current = panel->current_dir;
-            
+
             if (fs_touch(filename) == 0) {
                 strcpy(fm_status, "Created file: ");
                 strcat(fm_status, filename);
             } else {
                 strcpy(fm_status, "Failed to create file");
             }
-            
+
             fs_current = old_current;
             fm_refresh_panel(panel);
         } else {
@@ -661,21 +660,21 @@ static void fm_touch(void) {
 static void fm_copy_file(void) {
     fm_panel* src_panel = fm_get_active();
     fm_panel* dst_panel = fm_get_inactive();
-    
+
     fs_node* node = fm_get_selected_node(src_panel);
     if (!node) {
         strcpy(fm_status, "Nothing to copy");
         return;
     }
-    
+
     if (node->type != FS_FILE) {
         strcpy(fm_status, "Cannot copy directories (yet)");
         return;
     }
-    
+
     char new_name[MAX_NAME_LEN];
     strcpy(new_name, node->name);
-    
+
     char prompt[64];
     strcpy(prompt, "Copy to: ");
     strcat(prompt, dst_panel->path);
@@ -693,11 +692,11 @@ static void fm_copy_file(void) {
             break;
         }
     }
-    
+
     fs_node* old_current = fs_current;
     fs_current = dst_panel->current_dir;
     fs_touch(new_name);
-    
+
     fs_node* new_file = resolve_path(new_name, dst_panel->current_dir);
     if (new_file && new_file->type == FS_FILE) {
         strcpy(new_file->content, node->content);
@@ -710,7 +709,7 @@ static void fm_copy_file(void) {
     } else {
         strcpy(fm_status, "Copy failed");
     }
-    
+
     fs_current = old_current;
     fm_refresh_panel(dst_panel);
 }
@@ -719,20 +718,20 @@ static void fm_copy_file(void) {
 static void fm_move_file(void) {
     fm_panel* src_panel = fm_get_active();
     fm_panel* dst_panel = fm_get_inactive();
-    
+
     fs_node* node = fm_get_selected_node(src_panel);
     if (!node) {
         strcpy(fm_status, "Nothing to move");
         return;
     }
-    
+
     for (int i = 0; i < dst_panel->current_dir->child_count; i++) {
         if (strcmp(dst_panel->current_dir->children[i]->name, node->name) == 0) {
             strcpy(fm_status, "Error: file exists in destination");
             return;
         }
     }
-    
+
     if (node->type == FS_DIR) {
         fs_node* check = dst_panel->current_dir;
         while (check) {
@@ -754,13 +753,13 @@ static void fm_move_file(void) {
             break;
         }
     }
-    
+
     dst_panel->current_dir->children[dst_panel->current_dir->child_count++] = node;
     node->parent = dst_panel->current_dir;
-    
+
     fm_refresh_panel(src_panel);
     fm_refresh_panel(dst_panel);
-    
+
     strcpy(fm_status, "Moved: ");
     strcat(fm_status, node->name);
 }
@@ -768,9 +767,9 @@ static void fm_move_file(void) {
 // F7 - MkDir
 static void fm_make_dir(void) {
     fm_panel* panel = fm_get_active();
-    
+
     char dirname[MAX_NAME_LEN];
-    
+
     if (fm_input_dialog(" Create Directory ", "Enter directory name:", dirname, MAX_NAME_LEN)) {
         if (dirname[0]) {
             for (int i = 0; i < panel->current_dir->child_count; i++) {
@@ -779,17 +778,17 @@ static void fm_make_dir(void) {
                     return;
                 }
             }
-            
+
             fs_node* old_current = fs_current;
             fs_current = panel->current_dir;
-            
+
             if (fs_mkdir(dirname) == 0) {
                 strcpy(fm_status, "Created directory: ");
                 strcat(fm_status, dirname);
             } else {
                 strcpy(fm_status, "Failed to create directory");
             }
-            
+
             fs_current = old_current;
             fm_refresh_panel(panel);
         } else {
@@ -804,37 +803,37 @@ static void fm_make_dir(void) {
 static void fm_delete(void) {
     fm_panel* panel = fm_get_active();
     fs_node* node = fm_get_selected_node(panel);
-    
+
     if (!node) {
         strcpy(fm_status, "Nothing to delete");
         return;
     }
-    
+
     int dialog_w = 50;
     int dialog_h = 6;
     int dialog_x = (VGA_WIDTH - dialog_w) / 2;
     int dialog_y = (VGA_HEIGHT - dialog_h) / 2;
-    
+
     fm_draw_dialog_box(dialog_x, dialog_y, dialog_w, dialog_h, " Delete ", 0x4F);
-    
+
     fm_put_string(dialog_x + 2, dialog_y + 2, "Delete: ", 0x4F);
     fm_put_string(dialog_x + 10, dialog_y + 2, node->name, 0x4E);
     fm_put_string(dialog_x + 2, dialog_y + 4, "Press Y to confirm, any other to cancel", 0x4F);
-    
+
     fm_wait_key_release();
     uint8_t sc = fm_wait_key();
     fm_wait_key_release();
-    
+
     if (sc != 0x15) {
         strcpy(fm_status, "Deletion cancelled");
         return;
     }
-    
+
     if (node->type == FS_DIR && node->child_count > 0) {
         strcpy(fm_status, "Cannot delete: directory not empty");
         return;
     }
-    
+
     fs_node* parent = node->parent;
     for (int i = 0; i < parent->child_count; i++) {
         if (parent->children[i] == node) {
@@ -845,9 +844,9 @@ static void fm_delete(void) {
             break;
         }
     }
-    
+
     fm_refresh_panel(panel);
-    
+
     strcpy(fm_status, "Deleted: ");
     strcat(fm_status, node->name);
 }
@@ -856,25 +855,25 @@ static void fm_delete(void) {
 static void fm_edit_file(void) {
     fm_panel* panel = fm_get_active();
     fs_node* node = fm_get_selected_node(panel);
-    
+
     if (!node || node->type != FS_FILE) {
         strcpy(fm_status, "Cannot edit: not a file");
         return;
     }
-    
+
     char full_path[256];
     strcpy(full_path, panel->path);
     if (full_path[strlen(full_path) - 1] != '/') {
         strcat(full_path, "/");
     }
     strcat(full_path, node->name);
-    
+
     extern void nano_edit(const char* filename);
     nano_edit(full_path);
-    
+
     fm_refresh_panel(panel);
     fm_wait_key_release();
-    
+
     strcpy(fm_status, "Edited: ");
     strcat(fm_status, node->name);
 }
@@ -885,48 +884,48 @@ static void fm_handle_input(void) {
         if (!fm_kbd_has_data()) continue;
         scancode = fm_read_scancode_raw();
     } while (scancode & 0x80);
-    
+
     fm_panel* panel = fm_get_active();
     int total_items = panel->file_count + (panel->has_parent ? 1 : 0);
-    
+
     switch (scancode) {
         case KEY_UP:
             if (panel->selected > 0) {
                 panel->selected--;
             }
             break;
-            
+
         case KEY_DOWN:
             if (panel->selected < total_items - 1) {
                 panel->selected++;
             }
             break;
-            
+
         case KEY_HOME:
             panel->selected = 0;
             panel->scroll = 0;
             break;
-            
+
         case KEY_END:
             panel->selected = total_items > 0 ? total_items - 1 : 0;
             break;
-            
+
         case KEY_PGUP:
             panel->selected -= FM_PANEL_HEIGHT - 2;
             if (panel->selected < 0) panel->selected = 0;
             break;
-            
+
         case KEY_PGDN:
             panel->selected += FM_PANEL_HEIGHT - 2;
-            if (panel->selected >= total_items) 
+            if (panel->selected >= total_items)
                 panel->selected = total_items > 0 ? total_items - 1 : 0;
             break;
-            
+
         case KEY_TAB:
             active_panel = 1 - active_panel;
             strcpy(fm_status, active_panel == 0 ? "Left panel" : "Right panel");
             break;
-            
+
         case KEY_ENTER:
             {
                 fs_node* node = fm_get_selected_node(panel);
@@ -937,77 +936,77 @@ static void fm_handle_input(void) {
                 }
             }
             break;
-            
+
         case KEY_ESC:
         case KEY_F10:
             fm_running = 0;
             break;
-            
+
         case KEY_F1:
             fm_show_help();
             break;
-            
+
         case KEY_F2:
             fm_rename();
             break;
-            
+
         case KEY_F3:
             fm_view_file();
             break;
-            
+
         case KEY_F4:
             fm_edit_file();
             break;
-            
+
         case KEY_F5:
             fm_copy_file();
             break;
-            
+
         case KEY_F6:
             fm_move_file();
             break;
-            
+
         case KEY_F7:
             fm_make_dir();
             break;
-            
+
         case KEY_F8:
             fm_delete();
             break;
-            
+
         case KEY_F9:
             fm_touch();
             break;
     }
-    
+
     if (scancode >= KEY_F1 && scancode <= KEY_F12) {
         fm_wait_key_release();
     }
 }
 
 
-void fm_run(void) {
+void fm_fat_run(void) {
     fs_node* saved_current = fs_current;
     uint8_t saved_color = vga_color;
-    
+
     active_panel = 0;
     fm_running = 1;
     fm_need_redraw = 1;
     strcpy(fm_status, "F1=Help | Tab=Switch | F10/ESC=Exit");
-    
+
     fm_init_panel(&left_panel, fs_current);
     fm_init_panel(&right_panel, fs_root);
-    
+
     fm_kbd_flush();
-    
+
     while (fm_running) {
         fm_draw();
         fm_handle_input();
     }
-    
+
     fs_current = saved_current;
     vga_color = saved_color;
     vga_clear();
-    
+
     vga_print_color("File Manager closed.\n", 0x0A);
 }

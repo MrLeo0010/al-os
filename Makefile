@@ -11,18 +11,39 @@ ISO = AL-OS.iso
 comma := ,
 DRIVE_ARG := $(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img$(comma)format=raw)
 
-OBJS = boot/kernel_entry.o kernel/kernel.o \
+OBJS = boot/kernel_entry.o \
+       kernel/kernel.o \
+       kernel/commands/execute_commands.o \
+       kernel/commands/calc.o \
+       kernel/commands/colorbar.o \
+       kernel/commands/cp.o \
+       kernel/commands/date.o \
+       kernel/commands/echo.o \
+       kernel/commands/help.o \
+       kernel/commands/history.o \
+       kernel/commands/memtest.o \
+       kernel/commands/mv.o \
+       kernel/commands/slowfetch.o \
+       kernel/commands/sysinfo.o \
+       kernel/commands/tree.o \
+       kernel/commands/whoami.o \
+       kernel/drivers/ata.o \
        kernel/drivers/keyboard.o \
        kernel/drivers/vga.o \
-       kernel/drivers/ata.o \
-       kernel/fs/fs.o \
+       kernel/exec/elf.o \
        kernel/fs/fat.o \
-       kernel/utils/string.o \
+       kernel/fs/fs.o \
+       kernel/utils/beep.o \
+       kernel/utils/fat_shell.o \
+       kernel/utils/fm.o \
+       kernel/utils/fm_fat.o \
+       kernel/utils/memtest.o \
        kernel/utils/nano.o \
        kernel/utils/panic.o \
-       kernel/utils/fm.o \
+       kernel/utils/power/reboot.o \
+       kernel/utils/power/shutdown.o \
        kernel/utils/screensaver.o \
-	   kernel/exec/elf.o
+       kernel/utils/string.o
 
 all: $(TARGET)
 

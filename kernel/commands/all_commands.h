@@ -1,0 +1,20 @@
+#ifndef ALL_COMMANDS_H
+#define ALL_COMMANDS_H
+
+#include "../fs/fs.h"
+
+void cmd_echo(const char* args);
+void cmd_cp(const char* args);
+void cmd_mv(const char* args);
+void cmd_help(const char* args);
+void cmd_tree(fs_node* node, int depth);
+void cmd_calc(const char* expr);
+void cmd_sysinfo();
+void cmd_slowfetch();
+void cmd_whoami();
+void cmd_date();
+void cmd_colorbar(void);
+void cmd_memtest();
+
+
+#endif

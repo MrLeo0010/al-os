@@ -2,15 +2,13 @@
 #include "../utils/ports.h"
 #include "../utils/string.h"
 #include "../drivers/vga.h"
+#include "../kernel.h"
 #include <stdbool.h>
 
 #define HISTORY_SIZE 10
 #define HISTORY_ENTRY_LEN 128
 #define INPUT_BUFFER_SIZE 256
 
-char history[HISTORY_SIZE][HISTORY_ENTRY_LEN];
-int history_count = 0;
-int history_nav = 0;
 
 static char input_buffer[INPUT_BUFFER_SIZE];
 static int input_len = 0;
