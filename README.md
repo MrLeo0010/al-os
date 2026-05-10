@@ -45,6 +45,9 @@ Forked by **MrLeo0010**
 Ubuntu/Debian 13:
 sudo apt update && sudo apt install -y build-essential gcc-i686-linux-gnu gcc-14-i686-linux-gnu libc6-dev-i386 binutils nasm grub-pc-bin grub-common xorriso && make iso
 
+You can also use the mrleo0010/al-os-build docker container:
+docker run --rm -v "$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
+
 ---
 
 ## Run
