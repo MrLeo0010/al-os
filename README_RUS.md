@@ -54,6 +54,9 @@
 Ubuntu/Debian:
 sudo apt update && sudo apt install -y build-essential gcc-i686-linux-gnu gcc-14-i686-linux-gnu libc6-dev-i386 binutils nasm grub-pc-bin grub-common xorriso && make iso
 
+Также вы можете использовать docker контейнер mrleo0010/al-os-build:
+docker run --rm -v "$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
+
 ---
 
 ## Запуск
