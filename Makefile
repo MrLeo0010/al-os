@@ -8,6 +8,9 @@ ASFLAGS = -f elf32
 TARGET = kernel.elf
 ISO = AL-OS.iso
 
+comma := ,
+DRIVE_ARG := $(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img$(comma)format=raw)
+
 OBJS = boot/kernel_entry.o kernel/kernel.o \
        kernel/drivers/keyboard.o \
        kernel/drivers/vga.o \
@@ -59,7 +62,7 @@ run:
 	qemu-system-i386 \
 		-m 64M \
 		-cdrom AL-OS.iso \
-		$(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img,format=raw,) \
+		$(DRIVE_ARG) \
 		-boot d \
 		-display gtk
 
