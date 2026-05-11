@@ -45,7 +45,8 @@ OBJS = boot/kernel_entry.o \
        kernel/utils/screensaver.o \
        kernel/utils/string.o \
        kernel/utils/time.o \
-       kernel/commands/aarch.o
+       kernel/commands/aarch.o \
+       kernel/utils/init.o
 
 all: $(TARGET)
 
