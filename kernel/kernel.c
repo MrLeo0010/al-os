@@ -5,6 +5,8 @@
 #include "commands/execute_commands.h"
 #include "kernel.h"
 #include "utils/time.h"
+#include "utils/string.h"
+
 
 char user[32] = "root";
 long boot_seconds = 0;
@@ -13,34 +15,6 @@ char history[HISTORY_SIZE][HISTORY_LEN] = {0};
 int history_count = 0;
 int history_nav = -1;
 void print(const char *str);
-
-char* strstr(const char* haystack, const char* needle) {
-    if (!*needle) return (char*)haystack;
-    while (*haystack) {
-        const char* h = haystack;
-        const char* n = needle;
-        while (*h && *n && *h == *n) { h++; n++; }
-        if (!*n) return (char*)haystack;
-        haystack++;
-    }
-    return NULL;
-}
-
-char* strrchr(const char* s, int c) {
-    const char* last = NULL;
-    while (*s) {
-        if (*s == (char)c) last = s;
-        s++;
-    }
-    if (*s == (char)c) last = s;
-    return (char*)last;
-}
-
-size_t strlen(const char *str) {
-    const char *s = str;
-    while (*s) s++;
-    return (size_t)(s - str);
-}
 
 void keyboard_history_add(const char* cmd);
 
