@@ -66,13 +66,3 @@ Currently you can use:
 Forks, ideas and pull requests - welcome.
 
 ---
-
-## What I want to add
-
-1. Add internet support and ping commands
-2. Add support for Linux elf executables
-3. I haven't figured it out yet, but I'll keep adding to it. 
-
-The order of ideas is set by priority. 1 is what I need and want absolutely, 2 is desirable, the rest is with a low priority.
-
----
