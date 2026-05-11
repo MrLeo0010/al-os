@@ -43,7 +43,8 @@ OBJS = boot/kernel_entry.o \
        kernel/utils/power/reboot.o \
        kernel/utils/power/shutdown.o \
        kernel/utils/screensaver.o \
-       kernel/utils/string.o
+       kernel/utils/string.o \
+       kernel/utils/time.o
 
 all: $(TARGET)
 

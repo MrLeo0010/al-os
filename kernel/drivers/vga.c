@@ -1,4 +1,5 @@
 #include "vga.h"
+#include "../utils/time.h"
 
 unsigned char vga_color = 0x07;
 static uint16_t* const vga_buffer = (uint16_t*)0xB8000;

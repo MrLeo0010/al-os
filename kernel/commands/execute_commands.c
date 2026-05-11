@@ -13,6 +13,8 @@
 #include "../kernel.h"
 #include "../utils/beep.h"
 #include "../utils/power/power.h"
+#include "../utils/time.h"
+
 
 #include "all_commands.h"
 

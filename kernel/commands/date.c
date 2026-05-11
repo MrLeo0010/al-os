@@ -1,5 +1,5 @@
 #include "all_commands.h"
-#include "../kernel.h"
+#include "../utils/time.h"
 #include "../drivers/vga.h"
 #include "../utils/string.h"
 
