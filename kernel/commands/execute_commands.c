@@ -66,18 +66,7 @@ int execute_command(char* cmd) {
     else if (strcmp(cmd, "sysinfo") == 0) cmd_sysinfo();
     else if (strcmp(cmd, "slowfetch") == 0) cmd_slowfetch();
     else if (strcmp(cmd, "uptime") == 0) {
-        rtc_time now; rtc_read(&now);
-        long now_s = time_to_seconds(&now);
-        long diff = now_s - boot_seconds;
-        if (diff < 0) diff = 0;
-        int days = diff / 86400; diff %= 86400;
-        int hours = diff / 3600; diff %= 3600;
-        int mins = diff / 60; int secs = diff % 60;
-        char buf[64];
-        itoa(days, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(" days ", 0x0F);
-        itoa(hours, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(":", 0x0F);
-        itoa(mins, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(":", 0x0F);
-        itoa(secs, buf, 10); vga_print_color(buf, 0x0E); vga_putc('\n');
+        uptime_cmd();
     }
     else if (strcmp(cmd, "meminfo") == 0) {
         extern char _start; extern char end;
@@ -87,11 +76,7 @@ int execute_command(char* cmd) {
         int ksize = (int)&end - (int)&_start; itoa(ksize, buf, 10); vga_print_color("size: ", 0x0E); vga_print_color(buf, 0x0F); vga_putc('\n');
     }
     else if (strcmp(cmd, "time") == 0) {
-        rtc_time now; rtc_read(&now);
-        char buf[32];
-        itoa(now.hour, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(":", 0x0F);
-        itoa(now.min, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(":", 0x0F);
-        itoa(now.sec, buf, 10); vga_print_color(buf, 0x0E); vga_putc('\n');
+        time_cmd();
     }
     else if (strcmp(cmd, "aarch") == 0) {
         cmd_aarch();

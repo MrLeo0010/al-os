@@ -47,7 +47,8 @@ OBJS = boot/kernel_entry.o \
        kernel/utils/time.o \
        kernel/commands/aarch.o \
        kernel/utils/init.o \
-       kernel/commands/time_cmd.o
+       kernel/commands/time_cmd.o \
+       kernel/commands/uptime.o
 
 all: $(TARGET)
 
