@@ -18,6 +18,7 @@ void cmd_memtest();
 void cmd_aarch();
 void time_cmd();
 void uptime_cmd();
+void meminfo_cmd();
 
 
 #endif
