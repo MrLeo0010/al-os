@@ -19,6 +19,7 @@ void cmd_aarch();
 void time_cmd();
 void uptime_cmd();
 void meminfo_cmd();
+void cmd_history();
 
 
 #endif

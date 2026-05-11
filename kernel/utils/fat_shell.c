@@ -5,12 +5,13 @@
 #include "../drivers/keyboard.h"
 #include "../exec/elf.h"
 #include "fat_shell.h"
+#include "../utils/colors.h"
 
 
 
 void fat_shell(void) {
     if (!fat_is_mounted()) {
-        vga_print_color("No FAT filesystem mounted. Use 'mount 0' first.\n", 0x0C);
+        vga_print_color("No FAT filesystem mounted. Use 'mount 0' first.\n", LIGHT_RED);
         return;
     }
 
@@ -20,7 +21,7 @@ void fat_shell(void) {
 
     while (1) {
         vga_print_color("fat:", 0x0B);
-        vga_print_color(fat_get_current_path(), 0x0E);
+        vga_print_color(fat_get_current_path(), YELLOW);
         vga_print_color("> ", 0x07);
 
         keyboard_read_line(cmd, MAX_CMD_LEN);
@@ -40,7 +41,7 @@ void fat_shell(void) {
             break;
         }
         else if (strcmp(cmd, "help") == 0) {
-            vga_print_color("FAT Shell Commands:\n", 0x0E);
+            vga_print_color("FAT Shell Commands:\n", YELLOW);
             vga_print_color("  ls [path]       - List directory\n", 0x0F);
             vga_print_color("  cd [path]       - Change directory\n", 0x0F);
             vga_print_color("  pwd             - Print working directory\n", 0x0F);
@@ -66,19 +67,19 @@ void fat_shell(void) {
         }
         else if (strcmp(cmd, "cat") == 0) {
             if (args[0]) fat_cat(args);
-            else vga_print_color("Usage: cat <file>\n", 0x0C);
+            else vga_print_color("Usage: cat <file>\n", LIGHT_RED);
         }
         else if (strcmp(cmd, "mkdir") == 0) {
             if (args[0]) fat_mkdir(args);
-            else vga_print_color("Usage: mkdir <name>\n", 0x0C);
+            else vga_print_color("Usage: mkdir <name>\n", LIGHT_RED);
         }
         else if (strcmp(cmd, "touch") == 0) {
             if (args[0]) fat_touch(args);
-            else vga_print_color("Usage: touch <name>\n", 0x0C);
+            else vga_print_color("Usage: touch <name>\n", LIGHT_RED);
         }
         else if (strcmp(cmd, "rm") == 0) {
             if (args[0]) fat_rm(args);
-            else vga_print_color("Usage: rm <name>\n", 0x0C);
+            else vga_print_color("Usage: rm <name>\n", LIGHT_RED);
         }
         else if (strcmp(cmd, "write") == 0) {
             char* text = strchr(args, ' ');
@@ -89,14 +90,14 @@ void fat_shell(void) {
                     vga_print_color("Written\n", 0x0A);
                 }
             } else {
-                vga_print_color("Usage: write <file> <text>\n", 0x0C);
+                vga_print_color("Usage: write <file> <text>\n", LIGHT_RED);
             }
         }
         else if (strcmp(cmd, "exec") == 0 || strcmp(cmd, "run") == 0 || strcmp(cmd, "./") == 0) {
             if (args[0]) {
                 elf_exec(args);
             } else {
-                vga_print_color("Usage: exec <file.elf>\n", 0x0C);
+                vga_print_color("Usage: exec <file.elf>\n", LIGHT_RED);
             }
         }
         else if (strcmp(cmd, "info") == 0) {
@@ -109,7 +110,7 @@ void fat_shell(void) {
             if (fat_exists(cmd)) {
                 elf_exec(cmd);
             } else {
-                vga_print_color("Unknown command. Type 'help' for list.\n", 0x0C);
+                vga_print_color("Unknown command. Type 'help' for list.\n", LIGHT_RED);
             }
         }
     }

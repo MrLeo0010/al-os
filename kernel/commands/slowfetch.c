@@ -1,6 +1,7 @@
 #include "../drivers/vga.h"
 #include "all_commands.h"
 #include "../drivers/keyboard.h"
+#include "../utils/colors.h"
 
 
 static void slowprint_line(const char* str, uint8_t color, unsigned int delay) {
@@ -12,7 +13,7 @@ static void slowprint_line(const char* str, uint8_t color, unsigned int delay) {
             if ((j & 0xFFF) == 0) {
                 keyboard_poll();
                 if (keyboard_sigint_check()) {
-                    vga_print_color("\nOperation cancelled\n", 0x0C);
+                    vga_print_color("\nOperation cancelled\n", LIGHT_RED);
                     vga_color = old;
                     return;
                 }

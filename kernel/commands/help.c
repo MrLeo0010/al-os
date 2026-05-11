@@ -2,6 +2,8 @@
 #include "../drivers/vga.h"
 #include "../kernel.h"
 #include "all_commands.h"
+#include "../utils/colors.h"
+
 
 
 const struct { const char* cmd; const char* desc; } help_table[] = {
@@ -60,15 +62,15 @@ void cmd_help(const char* arg) {
     if (arg && arg[0]) {
         for (int i = 0; i < cmd_count; i++) {
             if (strcmp(help_table[i].cmd, arg) == 0) {
-                vga_print_color(help_table[i].cmd, 0x0E); vga_print_color(" - ", 0x0F); vga_print_color(help_table[i].desc, 0x0F); vga_putc('\n');
+                vga_print_color(help_table[i].cmd, YELLOW); vga_print_color(" - ", 0x0F); vga_print_color(help_table[i].desc, 0x0F); vga_putc('\n');
                 return;
             }
         }
-        vga_print_color("No help for that command\n", 0x0C);
+        vga_print_color("No help for that command\n", LIGHT_RED);
         return;
     }
 
-    vga_print_color("Available commands:\n", 0x0E);
+    vga_print_color("Available commands:\n", YELLOW);
 
     const char* names[64];
     for (int i = 0; i < cmd_count && i < (int)(sizeof(names)/sizeof(names[0])); i++) names[i] = help_table[i].cmd;

@@ -1,10 +1,12 @@
 #include "../../drivers/vga.h"
 #include "../../utils/ports.h"
+#include "../../utils/colors.h"
+
 #include "power.h"
 
 
 void do_reboot(void) {
-    vga_print_color("Rebooting...\n", 0x0C);
+    vga_print_color("Rebooting...\n", LIGHT_RED);
     for (volatile int i = 0; i < 50000000; i++);
     asm volatile("cli");
     outb(0x64, 0xFE);

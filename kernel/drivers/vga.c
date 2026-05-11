@@ -74,3 +74,12 @@ void vga_move_cursor_forward(void) {
     uint16_t pos = vga_get_cursor();
     vga_set_cursor(pos + 1);
 }
+
+void vga_print_centered(const char *s, int row, uint8_t color) {
+    int len = 0;
+    for (const char *p = s; *p; p++) len++;
+    int col = (VGA_WIDTH - len) / 2;
+    if (col < 0) col = 0;
+    volatile uint16_t *pos = VGA_BUFFER + (row * VGA_WIDTH) + col;
+    while (*s) *pos++ = (uint16_t)(*s++ | (color << 8));
+}

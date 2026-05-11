@@ -1,10 +1,11 @@
 #include "../../drivers/vga.h"
 #include "../../utils/ports.h"
+#include "../../utils/colors.h"
 #include "power.h"
 
 
 void do_poweroff(void) {
-    vga_print_color("Shutting down...\n", 0x0C);
+    vga_print_color("Shutting down...\n", LIGHT_RED);
     for (volatile int i = 0; i < 50000000; i++);
 
     asm volatile("cli");
@@ -19,7 +20,7 @@ void do_poweroff(void) {
 
     outb(0x92, 0x01);
 
-    vga_print_color("Shutdown failed. Please power off manually.\n", 0x0C);
+    vga_print_color("Shutdown failed. Please power off manually.\n", LIGHT_RED);
     while (1) {
         asm volatile("hlt");
     }

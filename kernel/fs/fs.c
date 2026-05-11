@@ -2,6 +2,8 @@
 #include "../utils/string.h"
 #include "../drivers/vga.h"
 #include "../utils/panic.h"
+#include "../utils/colors.h"
+
 
 static fs_node fs_nodes[MAX_NODES];
 static int node_count = 0;
@@ -16,7 +18,7 @@ static fs_node* create_node(const char* name, fs_type type, fs_node* parent) {
     }
 
     fs_node* n = &fs_nodes[node_count++];
-    
+
     int i = 0;
     while (name[i] && i < MAX_NAME_LEN - 1) {
         n->name[i] = name[i];
@@ -125,7 +127,7 @@ void fs_init(void) {
 void fs_list(const char* path) {
     fs_node* dir = path ? resolve_path(path, fs_current) : fs_current;
     if (!dir || dir->type != FS_DIR) {
-        vga_print_color("Not a directory\n", 0x0C);
+        vga_print_color("Not a directory\n", LIGHT_RED);
         return;
     }
 
@@ -196,7 +198,7 @@ int fs_mkdir(const char* path) {
     }
 
     if (n == 0 || segs[n-1][0] == '\0') {
-        vga_print_color("Invalid directory name\n", 0x0C);
+        vga_print_color("Invalid directory name\n", LIGHT_RED);
         return -1;
     }
 
@@ -213,7 +215,7 @@ int fs_mkdir(const char* path) {
     if (find_child(parent, last)) return -1;
 
     if (parent->child_count >= MAX_CHILDREN) {
-        vga_print_color("Directory full\n", 0x0C);
+        vga_print_color("Directory full\n", LIGHT_RED);
         return -1;
     }
 
@@ -228,7 +230,7 @@ int fs_cd(const char* path) {
     if (!path || !path[0]) return -1;
     fs_node* node = resolve_path(path, fs_current);
     if (!node || node->type != FS_DIR) {
-        vga_print_color("No such directory\n", 0x0C);
+        vga_print_color("No such directory\n", LIGHT_RED);
         return -1;
     }
     fs_current = node;
@@ -265,7 +267,7 @@ int fs_touch(const char* path) {
 
     if (find_child(parent, segs[n-1])) return -1;
     if (parent->child_count >= MAX_CHILDREN) {
-        vga_print_color("Directory full\n", 0x0C);
+        vga_print_color("Directory full\n", LIGHT_RED);
         return -1;
     }
 
@@ -295,7 +297,7 @@ int fs_cat(const char* path) {
     if (!path || !path[0]) return -1;
     fs_node* node = resolve_path(path, fs_current);
     if (!node || node->type != FS_FILE) {
-        vga_print_color("Not a file\n", 0x0C);
+        vga_print_color("Not a file\n", LIGHT_RED);
         return -1;
     }
     if (node->content[0]) vga_print_color(node->content, 0x0F);

@@ -14,6 +14,8 @@
 #include "../utils/beep.h"
 #include "../utils/power/power.h"
 #include "../utils/time.h"
+#include "../utils/colors.h"
+
 
 #include "all_commands.h"
 
@@ -40,7 +42,7 @@ int execute_command(char* cmd) {
     else if (strcmp(cmd, "pwd") == 0)   { fs_pwd(); return 0; }
     else if (strcmp(cmd, "mkdir") == 0) {
         if (args[0]) return fs_mkdir(args);
-        vga_print_color("Usage: mkdir <name>\n", 0x0C);
+        vga_print_color("Usage: mkdir <name>\n", LIGHT_RED);
         return 1;
     }
     else if (strcmp(cmd, "rm") == 0) { if (args[0]) fs_rm(args); }
@@ -89,7 +91,7 @@ int execute_command(char* cmd) {
     else if (strcmp(cmd, "memtest") == 0)   cmd_memtest();
     else if (strcmp(cmd, "nano") == 0) {
         if (args[0]) nano_edit(args);
-        else vga_print_color("Usage: nano <file>\n", 0x0C);
+        else vga_print_color("Usage: nano <file>\n", LIGHT_RED);
     }
     else if (strcmp(cmd, "panic") == 0) {
         if (args && args[0]) {
@@ -108,7 +110,7 @@ int execute_command(char* cmd) {
     }
     else if (strcmp(cmd, "disks") == 0) {
         ata_init();
-        vga_print_color("Detected drives:\n", 0x0E);
+        vga_print_color("Detected drives:\n", YELLOW);
         for (int i = 0; i < 4; i++) {
             if (ata_drive_exists(i)) {
                 ata_device_t* dev = ata_get_device(i);
@@ -130,7 +132,7 @@ int execute_command(char* cmd) {
         if (args[0]) drive = args[0] - '0';
         if (fat_mount(drive) == 0) {
             vga_print_color("Mounted ", 0x0A);
-            vga_print_color(fat_get_type_str(), 0x0E);
+            vga_print_color(fat_get_type_str(), YELLOW);
             vga_print_color(" filesystem\n", 0x0A);
         }
     }
@@ -141,6 +143,9 @@ int execute_command(char* cmd) {
     else if (strcmp(cmd, "fatls") == 0) {
         fat_ls(args[0] ? args : NULL);
     }
+    else if (strcmp(cmd, "history") == 0) {
+        cmd_history();
+    }
     else if (strcmp(cmd, "fatcd") == 0) {
         if (args[0]) fat_cd(args);
         else fat_cd("/");
@@ -150,19 +155,19 @@ int execute_command(char* cmd) {
     }
     else if (strcmp(cmd, "fatcat") == 0) {
         if (args[0]) fat_cat(args);
-        else vga_print_color("Usage: fatcat <file>\n", 0x0C);
+        else vga_print_color("Usage: fatcat <file>\n", LIGHT_RED);
     }
     else if (strcmp(cmd, "fatmkdir") == 0) {
         if (args[0]) fat_mkdir(args);
-        else vga_print_color("Usage: fatmkdir <name>\n", 0x0C);
+        else vga_print_color("Usage: fatmkdir <name>\n", LIGHT_RED);
     }
     else if (strcmp(cmd, "fatrm") == 0) {
         if (args[0]) fat_rm(args);
-        else vga_print_color("Usage: fatrm <name>\n", 0x0C);
+        else vga_print_color("Usage: fatrm <name>\n", LIGHT_RED);
     }
     else if (strcmp(cmd, "fattouch") == 0) {
         if (args[0]) fat_touch(args);
-        else vga_print_color("Usage: fattouch <name>\n", 0x0C);
+        else vga_print_color("Usage: fattouch <name>\n", LIGHT_RED);
     }
     else if (strcmp(cmd, "fatwrite") == 0) {
         char* text = strchr(args, ' ');
@@ -171,7 +176,7 @@ int execute_command(char* cmd) {
             text++;
             fat_write(args, text, strlen(text));
         } else {
-            vga_print_color("Usage: fatwrite <file> <text>\n", 0x0C);
+            vga_print_color("Usage: fatwrite <file> <text>\n", LIGHT_RED);
         }
     }
     else if (strcmp(cmd, "fatinfo") == 0) {
@@ -181,7 +186,7 @@ int execute_command(char* cmd) {
         fat_shell();
     }
     else {
-        vga_print_color("Command not found\n", 0x0C);
+        vga_print_color("Command not found\n", LIGHT_RED);
         return 127;
     }
 

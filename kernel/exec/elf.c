@@ -3,6 +3,8 @@
 #include "../drivers/vga.h"
 #include "../drivers/keyboard.h"
 #include "../utils/string.h"
+#include "../utils/colors.h"
+
 
 #define ELF_MAX_FILE_SIZE   (512 * 1024)
 
@@ -129,10 +131,10 @@ static void sys_free(void* ptr) {
 
 static void setup_syscall_table(void) {
     syscall_table_t* table = (syscall_table_t*)SYSCALL_TABLE_ADDR;
-    
+
     table->magic = SYSCALL_MAGIC_VALUE;
     table->version = 3;
-    
+
     table->print = sys_print;
     table->print_color = sys_print_color;
     table->putchar = sys_putchar;
@@ -141,7 +143,7 @@ static void setup_syscall_table(void) {
     table->read_line = sys_read_line;
     table->sleep = sys_sleep;
     table->get_ticks = sys_get_ticks;
-    
+
     table->file_exists = sys_file_exists;
     table->file_read = sys_file_read;
     table->file_write = sys_file_write;
@@ -149,15 +151,15 @@ static void setup_syscall_table(void) {
     table->file_mkdir = sys_file_mkdir;
     table->is_dir = sys_is_dir;
     table->list_dir = sys_list_dir;
-    
+
     table->set_cursor = sys_set_cursor;
     table->get_cursor = sys_get_cursor;
     table->get_screen_width = sys_get_screen_width;
     table->get_screen_height = sys_get_screen_height;
-    
+
     table->key_pressed = sys_key_pressed;
     table->get_key_nonblock = sys_get_key_nonblock;
-    
+
     table->malloc = sys_malloc;
     table->free = sys_free;
 }
@@ -166,51 +168,51 @@ elf_error_t elf_validate(const void* data, uint32_t size) {
     if (size < sizeof(Elf32_Ehdr)) {
         return ELF_ERR_NOT_ELF;
     }
-    
+
     const Elf32_Ehdr* ehdr = (const Elf32_Ehdr*)data;
-    
+
     if (ehdr->e_ident[EI_MAG0] != 0x7F ||
         ehdr->e_ident[EI_MAG1] != 'E' ||
         ehdr->e_ident[EI_MAG2] != 'L' ||
         ehdr->e_ident[EI_MAG3] != 'F') {
         return ELF_ERR_NOT_ELF;
     }
-    
+
     if (ehdr->e_ident[EI_CLASS] != ELFCLASS32) {
         return ELF_ERR_NOT_32BIT;
     }
-    
+
     if (ehdr->e_ident[EI_DATA] != ELFDATA2LSB) {
         return ELF_ERR_NOT_LITTLE_ENDIAN;
     }
-    
+
     if (ehdr->e_type != ET_EXEC) {
         return ELF_ERR_NOT_EXECUTABLE;
     }
-    
+
     if (ehdr->e_machine != EM_386) {
         return ELF_ERR_WRONG_ARCH;
     }
-    
+
     if (ehdr->e_phnum == 0) {
         return ELF_ERR_NO_SEGMENTS;
     }
-    
+
     return ELF_OK;
 }
 
 elf_error_t elf_get_info(const void* data, uint32_t size, elf_info_t* info) {
     elf_error_t err = elf_validate(data, size);
     if (err != ELF_OK) return err;
-    
+
     const Elf32_Ehdr* ehdr = (const Elf32_Ehdr*)data;
     const Elf32_Phdr* phdr = (const Elf32_Phdr*)((uint8_t*)data + ehdr->e_phoff);
-    
+
     info->entry_point = ehdr->e_entry;
     info->load_addr = 0xFFFFFFFF;
     info->load_end = 0;
     info->bss_end = 0;
-    
+
     for (uint16_t i = 0; i < ehdr->e_phnum; i++) {
         if (phdr[i].p_type == PT_LOAD) {
             if (phdr[i].p_vaddr < info->load_addr) {
@@ -226,54 +228,54 @@ elf_error_t elf_get_info(const void* data, uint32_t size, elf_info_t* info) {
             }
         }
     }
-    
+
     return ELF_OK;
 }
 
 elf_error_t elf_load(const void* data, uint32_t size, uint32_t* entry) {
     elf_error_t err = elf_validate(data, size);
     if (err != ELF_OK) return err;
-    
+
     const Elf32_Ehdr* ehdr = (const Elf32_Ehdr*)data;
     const Elf32_Phdr* phdr = (const Elf32_Phdr*)((uint8_t*)data + ehdr->e_phoff);
-    
+
     for (uint16_t i = 0; i < ehdr->e_phnum; i++) {
         if (phdr[i].p_type != PT_LOAD) continue;
         if (phdr[i].p_memsz == 0) continue;
-        
+
         uint32_t vaddr = phdr[i].p_vaddr;
         uint32_t memsz = phdr[i].p_memsz;
         uint32_t end_addr = vaddr + memsz;
-        
+
         if (vaddr < KERNEL_RESERVED_END || end_addr > SAFE_LOAD_MAX) {
             return ELF_ERR_LOAD_FAILED;
         }
     }
-    
+
     for (uint16_t i = 0; i < ehdr->e_phnum; i++) {
         if (phdr[i].p_type != PT_LOAD) continue;
-        
+
         uint32_t vaddr = phdr[i].p_vaddr;
         uint32_t filesz = phdr[i].p_filesz;
         uint32_t memsz = phdr[i].p_memsz;
         uint32_t offset = phdr[i].p_offset;
-        
+
         if (offset + filesz > size) {
             return ELF_ERR_LOAD_FAILED;
         }
-        
+
         uint8_t* dest = (uint8_t*)vaddr;
         const uint8_t* src = (const uint8_t*)data + offset;
-        
+
         for (uint32_t j = 0; j < filesz; j++) {
             dest[j] = src[j];
         }
-        
+
         for (uint32_t j = filesz; j < memsz; j++) {
             dest[j] = 0;
         }
     }
-    
+
     *entry = ehdr->e_entry;
     return ELF_OK;
 }
@@ -282,62 +284,62 @@ typedef int (*elf_entry_fn)(void);
 
 int elf_exec(const char* path) {
     if (!fat_is_mounted()) {
-        vga_print_color("Error: No filesystem mounted\n", 0x0C);
+        vga_print_color("Error: No filesystem mounted\n", LIGHT_RED);
         return -1;
     }
-    
+
     int bytes_read = fat_read(path, elf_buffer, ELF_MAX_FILE_SIZE);
     if (bytes_read < 0) {
-        vga_print_color("Error: File not found: ", 0x0C);
-        vga_print_color(path, 0x0C);
+        vga_print_color("Error: File not found: ", LIGHT_RED);
+        vga_print_color(path, LIGHT_RED);
         vga_putc('\n');
         return -1;
     }
-    
+
     if (bytes_read < (int)sizeof(Elf32_Ehdr)) {
-        vga_print_color("Error: File too small\n", 0x0C);
+        vga_print_color("Error: File too small\n", LIGHT_RED);
         return -1;
     }
-    
+
     elf_error_t err = elf_validate(elf_buffer, bytes_read);
     if (err != ELF_OK) {
-        vga_print_color("Error: ", 0x0C);
-        vga_print_color(elf_strerror(err), 0x0C);
+        vga_print_color("Error: ", LIGHT_RED);
+        vga_print_color(elf_strerror(err), LIGHT_RED);
         vga_putc('\n');
         return -1;
     }
-    
+
     heap_offset = 0;
-    
+
     setup_syscall_table();
-    
+
     uint32_t entry;
     err = elf_load(elf_buffer, bytes_read, &entry);
     if (err != ELF_OK) {
-        vga_print_color("Load error: ", 0x0C);
-        vga_print_color(elf_strerror(err), 0x0C);
+        vga_print_color("Load error: ", LIGHT_RED);
+        vga_print_color(elf_strerror(err), LIGHT_RED);
         vga_putc('\n');
-        
+
         if (err == ELF_ERR_LOAD_FAILED) {
             elf_info_t info;
             if (elf_get_info(elf_buffer, bytes_read, &info) == ELF_OK) {
-                vga_print_color("Program address: 0x", 0x0E);
+                vga_print_color("Program address: 0x", YELLOW);
                 char buf[16];
                 itoa(info.load_addr, buf, 16);
                 vga_print(buf);
-                vga_print_color(" - 0x", 0x0E);
+                vga_print_color(" - 0x", YELLOW);
                 itoa(info.bss_end, buf, 16);
                 vga_print(buf);
-                vga_print_color("\nAllowed: 0x110000 - 0xA00000\n", 0x0E);
-                vga_print_color("Recompile with linker script\n", 0x0E);
+                vga_print_color("\nAllowed: 0x110000 - 0xA00000\n", YELLOW);
+                vga_print_color("Recompile with linker script\n", YELLOW);
             }
         }
         return -1;
     }
-    
+
     elf_entry_fn program = (elf_entry_fn)entry;
     int result = program();
-    
+
     return result;
 }
 

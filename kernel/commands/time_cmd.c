@@ -1,13 +1,15 @@
 #include "../drivers/vga.h"
 #include "../utils/time.h"
 #include "../utils/string.h"
+#include "../utils/colors.h"
+
 #include "all_commands.h"
 
 void time_cmd()
 {
     rtc_time now; rtc_read(&now);
     char buf[32];
-    itoa(now.hour, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(":", 0x0F);
-    itoa(now.min, buf, 10); vga_print_color(buf, 0x0E); vga_print_color(":", 0x0F);
-    itoa(now.sec, buf, 10); vga_print_color(buf, 0x0E); vga_putc('\n');
+    itoa(now.hour, buf, 10); vga_print_color(buf, YELLOW); vga_print_color(":", 0x0F);
+    itoa(now.min, buf, 10); vga_print_color(buf, YELLOW); vga_print_color(":", 0x0F);
+    itoa(now.sec, buf, 10); vga_print_color(buf, YELLOW); vga_putc('\n');
 }

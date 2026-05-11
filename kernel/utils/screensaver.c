@@ -3,6 +3,8 @@
 #include "../drivers/keyboard.h"
 #include "string.h"
 #include "ports.h"
+#include "../utils/colors.h"
+
 
 #define SCR_WIDTH  80
 #define SCR_HEIGHT 25
@@ -64,9 +66,9 @@ static int kbd_check_any_key(void) {
 
 static uint8_t kbd_wait_key(void) {
     uint8_t sc;
-    
+
     kbd_flush();
-    
+
     while (1) {
         while (!kbd_has_data());
         sc = inb(0x60);
@@ -109,11 +111,11 @@ void screensaver_matrix(void) {
     rand_init();
     vga_clear();
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
-    
+
     matrix_column cols[SCR_WIDTH];
     char screen[SCR_HEIGHT][SCR_WIDTH];
     uint8_t brightness[SCR_HEIGHT][SCR_WIDTH];
-    
+
     for (int x = 0; x < SCR_WIDTH; x++) {
         cols[x].active = 0;
         cols[x].y = -rand_range(5, 25);
@@ -121,40 +123,40 @@ void screensaver_matrix(void) {
         cols[x].speed = rand_range(1, 4);
         cols[x].timer = 0;
     }
-    
+
     for (int y = 0; y < SCR_HEIGHT; y++) {
         for (int x = 0; x < SCR_WIDTH; x++) {
             screen[y][x] = ' ';
             brightness[y][x] = 0;
         }
     }
-    
+
     const char* chars = MATRIX_CHARS;
     int chars_len = strlen(chars);
-    
+
     kbd_flush();
-    
+
     while (1) {
         for (int x = 0; x < SCR_WIDTH; x++) {
             cols[x].timer++;
-            
+
             if (cols[x].timer >= cols[x].speed) {
                 cols[x].timer = 0;
-                
+
                 if (!cols[x].active && rand() % 50 == 0) {
                     cols[x].active = 1;
                     cols[x].y = -rand_range(1, 10);
                     cols[x].length = rand_range(8, 20);
                 }
-                
+
                 if (cols[x].active) {
                     cols[x].y++;
-                    
+
                     if (cols[x].y >= 0 && cols[x].y < SCR_HEIGHT) {
                         screen[cols[x].y][x] = chars[rand() % chars_len];
                         brightness[cols[x].y][x] = 15;
                     }
-                    
+
                     for (int i = 1; i <= cols[x].length + 10; i++) {
                         int ty = cols[x].y - i;
                         if (ty >= 0 && ty < SCR_HEIGHT) {
@@ -164,7 +166,7 @@ void screensaver_matrix(void) {
                             }
                         }
                     }
-                    
+
                     if (cols[x].y - cols[x].length > SCR_HEIGHT + 5) {
                         cols[x].active = 0;
                         cols[x].y = -rand_range(5, 20);
@@ -172,21 +174,21 @@ void screensaver_matrix(void) {
                 }
             }
         }
-        
+
         for (int y = 0; y < SCR_HEIGHT; y++) {
             for (int x = 0; x < SCR_WIDTH; x++) {
                 uint8_t b = brightness[y][x];
                 uint8_t color;
-                
+
                 if (b == 0) color = 0x00;
                 else if (b >= 12) color = 0x0F;
                 else if (b >= 8) color = 0x0A;
                 else color = 0x02;
-                
+
                 scr_put(x, y, b > 0 ? screen[y][x] : ' ', color);
             }
         }
-        
+
         if (delay_or_key(30)) break;
     }
 }
@@ -206,14 +208,14 @@ void screensaver_stars(void) {
     rand_init();
     scr_clear(0x00);
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
-    
+
     star stars[MAX_STARS];
-    
+
     for (int i = 0; i < MAX_STARS; i++) {
         stars[i].x = rand_range(0, SCR_WIDTH - 1);
         stars[i].y = rand_range(0, SCR_HEIGHT - 1);
         stars[i].speed = rand_range(1, 4);
-        
+
         switch (stars[i].speed) {
             case 1: stars[i].symbol = '.'; stars[i].color = 0x08; break;
             case 2: stars[i].symbol = '.'; stars[i].color = 0x07; break;
@@ -221,7 +223,7 @@ void screensaver_stars(void) {
             case 4: stars[i].symbol = '*'; stars[i].color = 0x0F; break;
         }
     }
-    
+
     const char* logo[] = {
         "     _    _         ___  ____  ",
         "    / \\  | |       / _ \\/ ___| ",
@@ -233,12 +235,12 @@ void screensaver_stars(void) {
     int logo_w = 32;
     int logo_x = (SCR_WIDTH - logo_w) / 2;
     int logo_y = (SCR_HEIGHT - logo_h) / 2;
-    
+
     kbd_flush();
-    
+
     while (1) {
         scr_clear(0x00);
-        
+
         for (int i = 0; i < MAX_STARS; i++) {
             stars[i].x -= stars[i].speed;
             if (stars[i].x < 0) {
@@ -247,7 +249,7 @@ void screensaver_stars(void) {
             }
             scr_put(stars[i].x, stars[i].y, stars[i].symbol, stars[i].color);
         }
-        
+
         for (int row = 0; row < logo_h; row++) {
             for (int col = 0; logo[row][col]; col++) {
                 if (logo[row][col] != ' ') {
@@ -255,7 +257,7 @@ void screensaver_stars(void) {
                 }
             }
         }
-        
+
         if (delay_or_key(50)) break;
     }
 }
@@ -266,7 +268,7 @@ void screensaver_bounce(void) {
     rand_init();
     scr_clear(0x00);
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
-    
+
     const char* logo[] = {
         "     _    _         ___  ____  ",
         "    / \\  | |       / _ \\/ ___| ",
@@ -276,21 +278,21 @@ void screensaver_bounce(void) {
     };
     int logo_h = 5;
     int logo_w = 32;
-    
+
     int x = rand_range(0, SCR_WIDTH - logo_w);
     int y = rand_range(0, SCR_HEIGHT - logo_h);
     int dx = (rand() % 2) ? 1 : -1;
     int dy = (rand() % 2) ? 1 : -1;
-    
-    uint8_t colors[] = {0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+
+    uint8_t colors[] = {0x09, 0x0A, 0x0B, 0x0C, 0x0D, YELLOW, 0x0F};
     int num_colors = 7;
     int color_idx = 0;
-    
+
     kbd_flush();
-    
+
     while (1) {
         scr_clear(0x00);
-        
+
         for (int row = 0; row < logo_h; row++) {
             for (int col = 0; logo[row][col]; col++) {
                 if (logo[row][col] != ' ') {
@@ -298,21 +300,21 @@ void screensaver_bounce(void) {
                 }
             }
         }
-        
+
         x += dx;
         y += dy;
-        
+
         int bounced = 0;
-        
+
         if (x <= 0) { x = 0; dx = 1; bounced = 1; }
         if (x >= SCR_WIDTH - logo_w) { x = SCR_WIDTH - logo_w; dx = -1; bounced = 1; }
         if (y <= 0) { y = 0; dy = 1; bounced = 1; }
         if (y >= SCR_HEIGHT - logo_h) { y = SCR_HEIGHT - logo_h; dy = -1; bounced = 1; }
-        
+
         if (bounced) {
             color_idx = (color_idx + 1) % num_colors;
         }
-        
+
         if (delay_or_key(70)) break;
     }
 }
@@ -323,38 +325,38 @@ void screensaver_pipes(void) {
     rand_init();
     scr_clear(0x00);
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
-    
+
     int x = rand_range(10, SCR_WIDTH - 10);
     int y = rand_range(5, SCR_HEIGHT - 5);
     int dir = rand_range(0, 3);
-    
-    uint8_t colors[] = {0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E};
+
+    uint8_t colors[] = {0x09, 0x0A, 0x0B, 0x0C, 0x0D, YELLOW};
     int num_colors = 6;
     int color_idx = 0;
-    
+
     int steps = 0;
     int max_steps = rand_range(10, 50);
-    
+
     kbd_flush();
-    
+
     while (1) {
         char pipe_char = (dir == 0 || dir == 2) ? '|' : '-';
         scr_put(x, y, pipe_char, colors[color_idx]);
-        
+
         switch (dir) {
             case 0: y--; break;
             case 1: x++; break;
             case 2: y++; break;
             case 3: x--; break;
         }
-        
+
         steps++;
-        
+
         int must_turn = (x <= 1 || x >= SCR_WIDTH - 2 || y <= 1 || y >= SCR_HEIGHT - 2);
-        
+
         if (steps >= max_steps || must_turn) {
             int new_dir;
-            
+
             if (must_turn) {
                 if (x <= 1) new_dir = 1;
                 else if (x >= SCR_WIDTH - 2) new_dir = 3;
@@ -363,23 +365,23 @@ void screensaver_pipes(void) {
             } else {
                 new_dir = (rand() % 2) ? (dir + 1) % 4 : (dir + 3) % 4;
             }
-            
+
             scr_put(x, y, '+', colors[color_idx]);
             dir = new_dir;
             steps = 0;
             max_steps = rand_range(5, 30);
-            
+
             if (rand() % 3 == 0) {
                 color_idx = (color_idx + 1) % num_colors;
             }
         }
-        
+
         if (rand() % 300 == 0) {
             x = rand_range(10, SCR_WIDTH - 10);
             y = rand_range(5, SCR_HEIGHT - 5);
             color_idx = (color_idx + 1) % num_colors;
         }
-        
+
         if (delay_or_key(25)) break;
     }
 }
@@ -389,33 +391,33 @@ void screensaver_pipes(void) {
 void screensaver_fire(void) {
     rand_init();
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
-    
+
     static unsigned char fire[SCR_HEIGHT + 1][SCR_WIDTH];
-    
+
     const char fire_chars[] = " .:-=+*#%@";
     int num_chars = 10;
-    
-    uint8_t fire_colors[] = {0x00, 0x04, 0x04, 0x0C, 0x06, 0x0E, 0x0E, 0x0F};
+
+    uint8_t fire_colors[] = {0x00, 0x04, 0x04, 0x0C, 0x06, YELLOW, YELLOW, 0x0F};
     int num_fire_colors = 8;
-    
+
     for (int y = 0; y <= SCR_HEIGHT; y++) {
         for (int x = 0; x < SCR_WIDTH; x++) {
             fire[y][x] = 0;
         }
     }
-    
+
     kbd_flush();
-    
+
     while (1) {
         for (int x = 0; x < SCR_WIDTH; x++) {
             fire[SCR_HEIGHT][x] = rand() % 2 ? 70 : 0;
         }
-        
+
         for (int y = 0; y < SCR_HEIGHT; y++) {
             for (int x = 0; x < SCR_WIDTH; x++) {
                 int sum = 0;
                 int count = 0;
-                
+
                 for (int dx = -1; dx <= 1; dx++) {
                     int nx = x + dx;
                     if (nx >= 0 && nx < SCR_WIDTH) {
@@ -423,28 +425,28 @@ void screensaver_fire(void) {
                         count++;
                     }
                 }
-                
+
                 int avg = sum / count;
                 fire[y][x] = (avg > 3) ? avg - rand() % 4 : 0;
             }
         }
-        
+
         for (int y = 0; y < SCR_HEIGHT; y++) {
             for (int x = 0; x < SCR_WIDTH; x++) {
                 int intensity = fire[y][x];
-                
+
                 int char_idx = (intensity * num_chars) / 80;
                 if (char_idx >= num_chars) char_idx = num_chars - 1;
                 if (char_idx < 0) char_idx = 0;
-                
+
                 int color_idx = (intensity * num_fire_colors) / 80;
                 if (color_idx >= num_fire_colors) color_idx = num_fire_colors - 1;
                 if (color_idx < 0) color_idx = 0;
-                
+
                 scr_put(x, y, fire_chars[char_idx], fire_colors[color_idx]);
             }
         }
-        
+
         if (delay_or_key(35)) break;
     }
 }
@@ -454,16 +456,16 @@ void screensaver_fire(void) {
 void screensaver_plasma(void) {
     rand_init();
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
-    
+
     int frame = 0;
     const char plasma_chars[] = " .-:=+*#%@";
     int num_chars = 10;
-    
-    uint8_t plasma_colors[] = {0x01, 0x09, 0x03, 0x0B, 0x02, 0x0A, 0x06, 0x0E};
+
+    uint8_t plasma_colors[] = {0x01, 0x09, 0x03, 0x0B, 0x02, 0x0A, 0x06, YELLOW};
     int num_colors = 8;
-    
+
     kbd_flush();
-    
+
     while (1) {
         for (int y = 0; y < SCR_HEIGHT; y++) {
             for (int x = 0; x < SCR_WIDTH; x++) {
@@ -471,19 +473,19 @@ void screensaver_plasma(void) {
                 int v2 = (y + frame / 2) % 15;
                 int v3 = (x + y + frame) % 25;
                 int v4 = ((x - y) + frame * 2) % 30;
-                
+
                 int value = (v1 + v2 + v3 + v4) % (num_chars * 2);
                 if (value >= num_chars) value = num_chars * 2 - 1 - value;
-                
+
                 int color_val = (v1 + v3 + frame / 3) % (num_colors * 2);
                 if (color_val >= num_colors) color_val = num_colors * 2 - 1 - color_val;
-                
+
                 scr_put(x, y, plasma_chars[value], plasma_colors[color_val]);
             }
         }
-        
+
         frame++;
-        
+
         if (delay_or_key(40)) break;
     }
 }
@@ -501,12 +503,12 @@ void screensaver_run(void) {
         "Fire      - Burning flames",
         "Plasma    - Psychedelic waves"
     };
-    
+
     kbd_flush();
-    
+
     while (1) {
         vga_clear();
-        
+
         vga_print_color("\n", 0x00);
         vga_print_color("      _    _         ___  ____  \n", 0x0B);
         vga_print_color("     / \\  | |       / _ \\/ ___| \n", 0x0B);
@@ -514,8 +516,8 @@ void screensaver_run(void) {
         vga_print_color("   / ___ \\| |___   | |_| |___) |\n", 0x0B);
         vga_print_color("  /_/   \\_\\_____|   \\___/|____/ \n", 0x0B);
         vga_print_color("\n", 0x00);
-        vga_print_color("         === SCREENSAVER ===\n\n", 0x0E);
-        
+        vga_print_color("         === SCREENSAVER ===\n\n", YELLOW);
+
         for (int i = 0; i < num_modes; i++) {
             if (i == mode) {
                 vga_print_color("    > ", 0x0A);
@@ -527,12 +529,12 @@ void screensaver_run(void) {
                 vga_print_color("\n", 0x07);
             }
         }
-        
+
         vga_print_color("\n    [Up/Down] Select   [Enter] Start   [ESC] Exit\n", 0x07);
         vga_print_color("\n    Press any key to stop screensaver\n", 0x08);
-        
+
         uint8_t sc = kbd_wait_key();
-        
+
         switch (sc) {
             case 0x48: // Up
                 mode = (mode - 1 + num_modes) % num_modes;

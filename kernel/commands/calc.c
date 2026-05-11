@@ -1,6 +1,8 @@
 #include "../drivers/vga.h"
 #include "../kernel.h"
 #include "../utils/string.h"
+#include "../utils/colors.h"
+
 
 int parse_expr(const char* s, int* a, char* op, int* b) {
     int i = 0;
@@ -23,7 +25,7 @@ int parse_expr(const char* s, int* a, char* op, int* b) {
 
 void cmd_calc(const char* expr) {
     if (!expr || !expr[0]) {
-        vga_print_color("Usage: calc 2+2\n", 0x0C);
+        vga_print_color("Usage: calc 2+2\n", LIGHT_RED);
         return;
     }
     int a, b;
@@ -36,18 +38,18 @@ void cmd_calc(const char* expr) {
         case '*': res = a * b; break;
         case '/':
             if (b == 0) {
-                vga_print_color("Division by zero\n", 0x0C);
+                vga_print_color("Division by zero\n", LIGHT_RED);
                 return;
             }
             res = a / b;
             break;
         default:
-            vga_print_color("Invalid operator\n", 0x0C);
+            vga_print_color("Invalid operator\n", LIGHT_RED);
             return;
     }
     char buf[32];
     itoa(res, buf, 10);
-    vga_print_color("Result: ", 0x0E);
+    vga_print_color("Result: ", YELLOW);
     vga_print_color(buf, 0x0A);
     vga_putc('\n');
 }
