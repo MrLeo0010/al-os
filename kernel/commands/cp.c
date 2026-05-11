@@ -1,6 +1,5 @@
 #include "../drivers/vga.h"
 #include "../fs/fs.h"
-#include "../kernel.h"
 #include "../utils/string.h"
 #include "../utils/colors.h"
 
