@@ -15,6 +15,7 @@ void cmd_whoami();
 void cmd_date();
 void cmd_colorbar(void);
 void cmd_memtest();
+void cmd_aarch();
 
 
 #endif

@@ -15,7 +15,6 @@
 #include "../utils/power/power.h"
 #include "../utils/time.h"
 
-
 #include "all_commands.h"
 
 
@@ -95,15 +94,13 @@ int execute_command(char* cmd) {
         itoa(now.sec, buf, 10); vga_print_color(buf, 0x0E); vga_putc('\n');
     }
     else if (strcmp(cmd, "aarch") == 0) {
-        vga_print_color("Architecture: i686\n", 0x0E);
-        vga_print_color("Mode: 32-bit\n", 0x0F);
-        vga_print_color("Endianness: little\n", 0x0F);
+        cmd_aarch();
     }
     else if (strcmp(cmd, "reboot") == 0) {
         do_reboot();
     }
-    else if (strcmp(cmd, "shutdown") == 0 || strcmp(cmd, "poweroff") == 0) {
-        do_shutdown();
+    else if (strcmp(cmd, "poweroff") == 0 || strcmp(cmd, "shutdown") == 0) {
+        do_poweroff();
     }
     else if (strcmp(cmd, "whoami") == 0)    cmd_whoami();
     else if (strcmp(cmd, "date") == 0)      cmd_date();
@@ -206,5 +203,6 @@ int execute_command(char* cmd) {
         vga_print_color("Command not found\n", 0x0C);
         return 127;
     }
+
     return 0;
 }

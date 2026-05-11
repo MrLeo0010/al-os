@@ -3,7 +3,7 @@
 #include "power.h"
 
 
-void do_shutdown(void) {
+void do_poweroff(void) {
     vga_print_color("Shutting down...\n", 0x0C);
     for (volatile int i = 0; i < 50000000; i++);
 

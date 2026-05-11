@@ -41,10 +41,11 @@ OBJS = boot/kernel_entry.o \
        kernel/utils/nano.o \
        kernel/utils/panic.o \
        kernel/utils/power/reboot.o \
-       kernel/utils/power/shutdown.o \
+       kernel/utils/power/poweroff.o \
        kernel/utils/screensaver.o \
        kernel/utils/string.o \
-       kernel/utils/time.o
+       kernel/utils/time.o \
+       kernel/commands/aarch.o
 
 all: $(TARGET)
 
