@@ -11,61 +11,25 @@ ISO = AL-OS.iso
 comma := ,
 DRIVE_ARG := $(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img$(comma)format=raw)
 
-OBJS = boot/kernel_entry.o \
-       kernel/kernel.o \
-       kernel/commands/execute_commands.o \
-       kernel/commands/calc.o \
-       kernel/commands/colorbar.o \
-       kernel/commands/cp.o \
-       kernel/commands/date.o \
-       kernel/commands/echo.o \
-       kernel/commands/help.o \
-       kernel/commands/history.o \
-       kernel/commands/memtest.o \
-       kernel/commands/mv.o \
-       kernel/commands/slowfetch.o \
-       kernel/commands/sysinfo.o \
-       kernel/commands/tree.o \
-       kernel/commands/whoami.o \
-       kernel/drivers/ata.o \
-       kernel/drivers/keyboard.o \
-       kernel/drivers/vga.o \
-       kernel/exec/elf.o \
-       kernel/fs/fat.o \
-       kernel/fs/fs.o \
-       kernel/utils/beep.o \
-       kernel/utils/fat_shell.o \
-       kernel/utils/fm.o \
-       kernel/utils/fm_fat.o \
-       kernel/utils/memtest.o \
-       kernel/utils/nano.o \
-       kernel/utils/panic.o \
-       kernel/utils/power/reboot.o \
-       kernel/utils/power/poweroff.o \
-       kernel/utils/screensaver.o \
-       kernel/utils/string.o \
-       kernel/utils/time.o \
-       kernel/commands/aarch.o \
-       kernel/utils/init.o \
-       kernel/commands/time_cmd.o \
-       kernel/commands/uptime.o \
-       kernel/commands/meminfo.o
+# Все C файлы
+C_SRCS := $(shell find kernel -name '*.c')
+
+# Превращаем .c -> .o
+C_OBJS := $(C_SRCS:.c=.o)
+
+# ASM
+ASM_OBJS := boot/kernel_entry.o
+
+# Все объектники
+OBJS := $(ASM_OBJS) $(C_OBJS)
 
 all: $(TARGET)
 
 boot/kernel_entry.o: boot/kernel_entry.asm
 	$(ASM) $(ASFLAGS) $< -o $@
 
-kernel/%.o: kernel/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-kernel/drivers/%.o: kernel/drivers/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-kernel/utils/%.o: kernel/utils/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-kernel/fs/%.o: kernel/fs/%.c
+# Универсальное правило
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
