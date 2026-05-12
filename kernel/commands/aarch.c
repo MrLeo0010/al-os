@@ -1,4 +1,5 @@
 #include "../drivers/vga.h"
+#include "../utils/colors.h"
 #include "all_commands.h"
 
 void cmd_aarch() {

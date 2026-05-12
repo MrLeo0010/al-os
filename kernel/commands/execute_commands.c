@@ -4,7 +4,6 @@
 #include "../utils/screensaver.h"
 #include "../drivers/ata.h"
 #include "../utils/panic.h"
-#include <stddef.h>
 #include "../drivers/vga.h"
 #include "../fs/fs.h"
 #include "../utils/fat_shell.h"
@@ -15,6 +14,7 @@
 #include "../utils/power/power.h"
 #include "../utils/time.h"
 #include "../utils/colors.h"
+#include <stddef.h>
 
 
 #include "all_commands.h"
