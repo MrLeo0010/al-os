@@ -20,6 +20,7 @@ void time_cmd();
 void uptime_cmd();
 void meminfo_cmd();
 void cmd_history();
-
+void cmd_disks();
+void cmd_fatwrite();
 
 #endif
