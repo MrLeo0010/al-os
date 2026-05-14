@@ -5,13 +5,24 @@
 #include "../kernel.h"
 #include "../fs/fs.h"
 #include "string.h"
+#include "colors.h"
+
+static int exit_status = 0;
 
 void show_prompt(void) {
-    vga_print_color(user, 0x0A);
-    vga_print_color("@al-os", 0x0B);
-    vga_print_color(current_path, 0x0F);
-    vga_print_color("> ", 0x07);
+    if (exit_status != 0) {
+        char exit_str[16];
+        itoa(exit_status, exit_str, 10);
+        vga_print_color(exit_str, LIGHT_RED);
+        vga_print(" ");
+    }
+
+    vga_print_color(user, LIGHT_GREEN);
+    vga_print_color("@al-os", LIGHT_CYAN);
+    vga_print_color(current_path, WHITE);
+    vga_print_color("> ", LIGHT_GREY);
 }
+
 
 void shell_main_loop(void) {
     char cmd[MAX_CMD_LEN];
@@ -33,10 +44,10 @@ void shell_main_loop(void) {
 
             if (next_separator) {
                 *next_separator = '\0';
-                execute_command(current_cmd);
+                exit_status = execute_command(current_cmd);
                 current_cmd = next_separator + 2;
             } else {
-                execute_command(current_cmd);
+                exit_status = execute_command(current_cmd);
                 current_cmd = NULL;
             }
         }

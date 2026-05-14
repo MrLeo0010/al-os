@@ -1,33 +1,14 @@
 #include "screensaver.h"
 #include "../drivers/vga.h"
-#include "../drivers/keyboard.h"
 #include "string.h"
 #include "ports.h"
 #include "../utils/colors.h"
+#include "metadata.h"
+#include "random.h"
 
 
 #define SCR_WIDTH  80
 #define SCR_HEIGHT 25
-
-static unsigned int rand_seed = 12345;
-
-static unsigned int rand(void) {
-    rand_seed = rand_seed * 1103515245 + 12345;
-    return (rand_seed >> 16) & 0x7FFF;
-}
-
-static int rand_range(int min, int max) {
-    return min + (rand() % (max - min + 1));
-}
-
-static void rand_init(void) {
-    outb(0x43, 0x00);
-    unsigned char lo = inb(0x40);
-    unsigned char hi = inb(0x40);
-    rand_seed = (hi << 8) | lo;
-    rand_seed ^= rand_seed << 13;
-    if (rand_seed == 0) rand_seed = 12345;
-}
 
 static void scr_put(int x, int y, char c, uint8_t color) {
     if (x < 0 || x >= SCR_WIDTH || y < 0 || y >= SCR_HEIGHT) return;
@@ -224,13 +205,6 @@ void screensaver_stars(void) {
         }
     }
 
-    const char* logo[] = {
-        "     _    _         ___  ____  ",
-        "    / \\  | |       / _ \\/ ___| ",
-        "   / _ \\ | |      | | | \\___ \\ ",
-        "  / ___ \\| |___   | |_| |___) |",
-        " /_/   \\_\\_____|   \\___/|____/ "
-    };
     int logo_h = 5;
     int logo_w = 32;
     int logo_x = (SCR_WIDTH - logo_w) / 2;
@@ -251,9 +225,9 @@ void screensaver_stars(void) {
         }
 
         for (int row = 0; row < logo_h; row++) {
-            for (int col = 0; logo[row][col]; col++) {
-                if (logo[row][col] != ' ') {
-                    scr_put(logo_x + col, logo_y + row, logo[row][col], 0x0B);
+            for (int col = 0; AL_OS_LOGO[row][col]; col++) {
+                if (AL_OS_LOGO[row][col] != ' ') {
+                    scr_put(logo_x + col, logo_y + row, AL_OS_LOGO[row][col], 0x0B);
                 }
             }
         }
@@ -269,13 +243,6 @@ void screensaver_bounce(void) {
     scr_clear(0x00);
     vga_set_cursor(SCR_WIDTH * SCR_HEIGHT);
 
-    const char* logo[] = {
-        "     _    _         ___  ____  ",
-        "    / \\  | |       / _ \\/ ___| ",
-        "   / _ \\ | |      | | | \\___ \\ ",
-        "  / ___ \\| |___   | |_| |___) |",
-        " /_/   \\_\\_____|   \\___/|____/ "
-    };
     int logo_h = 5;
     int logo_w = 32;
 
@@ -294,9 +261,9 @@ void screensaver_bounce(void) {
         scr_clear(0x00);
 
         for (int row = 0; row < logo_h; row++) {
-            for (int col = 0; logo[row][col]; col++) {
-                if (logo[row][col] != ' ') {
-                    scr_put(x + col, y + row, logo[row][col], colors[color_idx]);
+            for (int col = 0; AL_OS_LOGO[row][col]; col++) {
+                if (AL_OS_LOGO[row][col] != ' ') {
+                    scr_put(x + col, y + row, AL_OS_LOGO[row][col], colors[color_idx]);
                 }
             }
         }
@@ -509,12 +476,9 @@ void screensaver_run(void) {
     while (1) {
         vga_clear();
 
+
         vga_print_color("\n", 0x00);
-        vga_print_color("      _    _         ___  ____  \n", 0x0B);
-        vga_print_color("     / \\  | |       / _ \\/ ___| \n", 0x0B);
-        vga_print_color("    / _ \\ | |      | | | \\___ \\ \n", 0x0B);
-        vga_print_color("   / ___ \\| |___   | |_| |___) |\n", 0x0B);
-        vga_print_color("  /_/   \\_\\_____|   \\___/|____/ \n", 0x0B);
+        print_logo();
         vga_print_color("\n", 0x00);
         vga_print_color("         === SCREENSAVER ===\n\n", YELLOW);
 

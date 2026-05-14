@@ -2,6 +2,8 @@
 #include "all_commands.h"
 #include "../drivers/keyboard.h"
 #include "../utils/colors.h"
+#include "../utils/metadata.h"
+
 
 
 static void slowprint_line(const char* str, uint8_t color, unsigned int delay) {
@@ -24,13 +26,15 @@ static void slowprint_line(const char* str, uint8_t color, unsigned int delay) {
     vga_color = old;
 }
 
+static void slowprint_logo() {
+    for (int i = 0; AL_OS_LOGO[i]; i++) {
+        slowprint_line(AL_OS_LOGO[i], 0x0B, 50000);
+    }
+}
+
 void cmd_slowfetch(void) {
     slowprint_line("", 0x0B, 50000);
-    slowprint_line("      _    _         ___  ____  ", 0x0B, 50000);
-    slowprint_line("     / \\  | |       / _ \\/ ___| ", 0x0B, 50000);
-    slowprint_line("    / _ \\ | |      | | | \\___ \\ ", 0x0B, 50000);
-    slowprint_line("   / ___ \\| |___   | |_| |___) |", 0x0B, 50000);
-    slowprint_line("  /_/   \\_\\_____|   \\___/|____/ ", 0x0B, 50000);
+    slowprint_logo();
     slowprint_line("", 0x07, 50000);
     cmd_sysinfo();
 }

@@ -2,7 +2,6 @@
 #include "../utils/nano.h"
 #include "../utils/fm.h"
 #include "../utils/screensaver.h"
-#include "../drivers/ata.h"
 #include "../utils/panic.h"
 #include "../drivers/vga.h"
 #include "../fs/fs.h"

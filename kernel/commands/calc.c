@@ -1,5 +1,4 @@
 #include "../drivers/vga.h"
-#include "../kernel.h"
 #include "../utils/string.h"
 #include "../utils/colors.h"
 
@@ -50,6 +49,6 @@ void cmd_calc(const char* expr) {
     char buf[32];
     itoa(res, buf, 10);
     vga_print_color("Result: ", YELLOW);
-    vga_print_color(buf, 0x0A);
+    vga_print_color(buf, LIGHT_GREEN);
     vga_putc('\n');
 }
