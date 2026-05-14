@@ -16,6 +16,8 @@ void vga_put_at(char c, uint8_t color, uint16_t pos);
 void vga_set_cursor(uint16_t pos);
 void vga_move_cursor_back(void);
 void vga_move_cursor_forward(void);
+void vga_put_color(int x, int y, char c, uint8_t color);
+void fill_screen_with_color(uint8_t color);
 uint16_t vga_get_cursor(void);
 
 extern unsigned char vga_color;

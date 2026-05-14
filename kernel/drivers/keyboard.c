@@ -326,6 +326,3 @@ void keyboard_read_line(char* buffer, int max_len) {
         }
     }
 }
-
-void keyboard_init(void) {
-}

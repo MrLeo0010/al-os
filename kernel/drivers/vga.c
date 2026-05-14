@@ -1,9 +1,9 @@
 #include "vga.h"
-#include "../utils/time.h"
 
 unsigned char vga_color = 0x07;
 static uint16_t* const vga_buffer = (uint16_t*)0xB8000;
 static uint16_t cursor_pos = 0;
+
 
 void vga_put_at(char c, uint8_t color, uint16_t pos) {
     vga_buffer[pos] = ((uint16_t)color << 8) | c;
@@ -82,4 +82,17 @@ void vga_print_centered(const char *s, int row, uint8_t color) {
     if (col < 0) col = 0;
     volatile uint16_t *pos = VGA_BUFFER + (row * VGA_WIDTH) + col;
     while (*s) *pos++ = (uint16_t)(*s++ | (color << 8));
+}
+
+void vga_put_color(int x, int y, char c, uint8_t color) {
+    if (x < 0 || x >= VGA_WIDTH || y < 0 || y >= VGA_HEIGHT) return;
+    vga_put_at(c, color, y * VGA_WIDTH + x);
+}
+
+void fill_screen_with_color(uint8_t color) {
+    for (int y = 0; y < VGA_HEIGHT; y++) {
+        for (int x = 0; x < VGA_WIDTH; x++) {
+            vga_put_color(x, y, ' ', color);
+        }
+    }
 }

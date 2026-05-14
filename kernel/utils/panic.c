@@ -2,25 +2,16 @@
 #include "../drivers/vga.h"
 
 
-// #define VGA_BUFFER ((volatile uint16_t*)0xB8000)
-// #define VGA_WIDTH 80
-// #define VGA_HEIGHT 25
-
 #define BLUE_BG_WHITE 0x1F
 #define BLUE_BG_RED 0x1C
 #define BLUE_BG_YELLOW 0x1E
 
-static void fill_screen_with_blue(void) {
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
-        VGA_BUFFER[i] = (uint16_t)(' ' | (BLUE_BG_WHITE << 8));
-    }
-}
 
 __attribute__((noreturn))
 void panic(const char *module, const char *reason, const char *function) {
     asm volatile("cli");
 
-    fill_screen_with_blue();
+    fill_screen_with_color(BLUE_BG_WHITE);
 
     vga_print_centered("KERNEL PANIC", 6, BLUE_BG_RED);
 
