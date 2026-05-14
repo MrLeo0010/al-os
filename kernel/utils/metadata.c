@@ -4,9 +4,9 @@
 // void load_data() {
 
 // }
-const char* VERSION = "0.4.3";
+const char* VERSION = "0.4.4";
 
-const char* RELEASE_NOTES = "";
+const char* RELEASE_NOTES = "Internal rewrite & shell improvements";
 
 const char* AL_OS_LOGO[] = {
     "     _    _         ___  ____  ",
