@@ -2,6 +2,8 @@
 #include "../pic/pic.h"
 #include "../../../utils/panic.h"
 
+extern void timer_handler(void);
+
 // Текстовые описания первых 32 исключений x86
 const char *exception_messages[] = {
     "Division By Zero",
@@ -42,15 +44,8 @@ void irq_handler(registers_t regs) {
     uint8_t irq_no = regs.int_no - 32;
 
     if (irq_no == 0) {
-        // Таймер тикает! Сюда можно будет выводить лог или инкрементировать тики
-        // Пока оставим пустым, чтобы не спамить в консоль
-    }
-    else if (irq_no == 1) {
-        // Клавиатура послала сигнал!
-        // uint8_t scancode = inb(0x60); — так считывается скан-код
+        timer_handler();
     }
 
-    // Сообщаем контроллеру PIC, что прерывание обработано успешно,
-    // иначе он обидится и больше ничего не пришлет
     pic_send_eoi(irq_no);
 }
