@@ -7,6 +7,9 @@ idt_ptr_t   idt_ptr;
 // Наша функция из kernel_entry.asm
 extern void idt_flush(uint32_t idt_ptr_addr);
 
+extern void irq0(void);
+extern void irq1(void);
+
 void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt[num].base_lo = base & 0xFFFF;
     idt[num].base_hi = (base >> 16) & 0xFFFF;
@@ -58,6 +61,9 @@ void init_idt(void) {
     idt_set_gate(29, (uint32_t)(uintptr_t)isr29, 0x08, 0x8E);
     idt_set_gate(30, (uint32_t)(uintptr_t)isr30, 0x08, 0x8E);
     idt_set_gate(31, (uint32_t)(uintptr_t)isr31, 0x08, 0x8E);
+
+    idt_set_gate(32, (uint32_t)(uintptr_t)irq0, 0x08, 0x8E);
+    idt_set_gate(33, (uint32_t)(uintptr_t)irq1, 0x08, 0x8E);
 
     idt_flush((uint32_t)(uintptr_t)&idt_ptr);
 }

@@ -97,3 +97,45 @@ isr_common_stub:
     ; Включаем прерывания обратно и возвращаемся из прерывания (команда iret!)
     sti
     iret
+
+
+; Макрос для генерации аппаратных прерываний
+%macro IRQ 2
+global irq%1
+irq%1:
+    push byte 0   ; Фиктивная ошибка
+    push byte %2  ; Номер вектора (32, 33 и т.д.)
+    jmp irq_common_stub
+%endmacro
+
+; Объявляем первые два железных прерывания
+IRQ 0, 32   ; IRQ0 - Системный таймер PIT
+IRQ 1, 33   ; IRQ1 - Клавиатура
+
+extern irq_handler
+
+irq_common_stub:
+    pusha           ; Сохраняем EDI, ESI, EBP, ESP, EBX, EDX, ECX, EAX
+
+    mov ax, ds      ; Сохраняем сегмент данных
+    push eax
+
+    mov ax, 0x10    ; Загружаем сегмент данных ядра в дескрипторы
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    push esp        ; Передаем указатель на стек (структуру registers_t) в Си
+    call irq_handler
+    pop eax
+
+    pop eax         ; Восстанавливаем оригинальный сегмент данных
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    popa            ; Восстанавливаем регистры общего назначения
+    add esp, 8      ; Очищаем стек от номера прерывания и фиктивной ошибки
+    iret            ; Возвращаемся из прерывания

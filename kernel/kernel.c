@@ -7,6 +7,8 @@
 #include "utils/colors.h"
 #include "arch/i686/gdt/gdt.h"
 #include "arch/i686/idt/idt.h"
+#include "arch/i686/pic/pic.h"
+
 
 
 char user[32] = "root";
@@ -16,8 +18,10 @@ void print(const char *str);
 
 void kernel_main(void)
 {
+    pic_remap(32, 40);
     init_gdt();
     init_idt();
+    __asm__ __volatile__("sti");
 
     init_system_base();
 

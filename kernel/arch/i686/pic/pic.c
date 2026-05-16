@@ -1,0 +1,50 @@
+#include "pic.h"
+#include "../../../utils/ports.h"
+
+// Если у тебя нет io_wait, это просто микро-задержка для старого железа
+static inline void io_wait(void) {
+    __asm__ __volatile__("outb %%al, $0x80" : : "a"(0));
+}
+
+void pic_remap(int offset1, int offset2) {
+    uint8_t a1, a2;
+
+    // Считываем текущие маски, чтобы ничего не сломать
+    a1 = inb(PIC1_DATA);
+    a2 = inb(PIC2_DATA);
+
+    // Начинаем инициализацию (ICW1)
+    outb(PIC1_COMMAND, 0x11);
+    io_wait();
+    outb(PIC2_COMMAND, 0x11);
+    io_wait();
+
+    // Задаем базовые векторы (ICW2)
+    outb(PIC1_DATA, offset1); // Теперь IRQ0-7 станут векторами 32-39
+    io_wait();
+    outb(PIC2_DATA, offset2); // Теперь IRQ8-15 станут векторами 40-47
+    io_wait();
+
+    // Связываем Master и Slave PIC (ICW3)
+    outb(PIC1_DATA, 0x04);
+    io_wait();
+    outb(PIC2_DATA, 0x02);
+    io_wait();
+
+    // Режим 8086 (ICW4)
+    outb(PIC1_DATA, 0x01);
+    io_wait();
+    outb(PIC2_DATA, 0x01);
+    io_wait();
+
+    // Возвращаем маски на место
+    outb(PIC1_DATA, a1);
+    outb(PIC2_DATA, a2);
+}
+
+void pic_send_eoi(uint8_t irq) {
+    if (irq >= 8) {
+        outb(PIC2_COMMAND, PIC_EOI);
+    }
+    outb(PIC1_COMMAND, PIC_EOI);
+}
