@@ -17,5 +17,6 @@ void keyboard_history_add(const char* cmd);
 const char* keyboard_history_prev(void);
 const char* keyboard_history_next(void);
 void keyboard_history_reset_nav(void);
+void keyboard_handler(void);
 
 #endif

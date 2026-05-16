@@ -16,10 +16,40 @@ static char input_buffer[INPUT_BUFFER_SIZE];
 static int input_len = 0;
 static int cursor_pos = 0;
 
+static bool extended_code = false;
 static bool ctrl_pressed = false;
 static bool shift_pressed = false;
 static bool numlock_on = false;
 static volatile bool sigint_received = false;
+
+// --- КРУГОВОЙ БУФЕР ДЛЯ ПРЕРЫВАНИЙ ---
+#define KBD_RING_BUFFER_SIZE 128
+static char kbd_ring_buffer[KBD_RING_BUFFER_SIZE];
+static int kbd_head = 0;
+static int kbd_tail = 0;
+
+// Записать символ в буфер (вызывается внутри прерывания)
+static void kbd_ring_push(char c) {
+    int next = (kbd_head + 1) % KBD_RING_BUFFER_SIZE;
+    if (next != kbd_tail) { // Если буфер не переполнен
+        kbd_ring_buffer[kbd_head] = c;
+        kbd_head = next;
+    }
+}
+
+// Проверить, есть ли символы
+int keyboard_has_key(void) {
+    return kbd_head != kbd_tail;
+}
+
+// Забрать символ из буфера (вызывается в Си-коде шелла)
+char keyboard_getc_from_buffer(void) {
+    if (!keyboard_has_key()) return 0;
+    char c = kbd_ring_buffer[kbd_tail];
+    kbd_tail = (kbd_tail + 1) % KBD_RING_BUFFER_SIZE;
+    return c;
+}
+
 
 void keyboard_history_add(const char* cmd) {
     if (!cmd || !cmd[0] || cmd[0] == '\n') return;
@@ -97,9 +127,80 @@ static const char numpad_on[128] = {
     [0x4E] = '+', [0x4A] = '-', [0x37] = '*', [0x35] = '/', [0x1C] = '\n'
 };
 
-int keyboard_has_key(void) {
-    return (inb(KBD_STATUS) & 1) != 0;
+// int keyboard_has_key(void) {
+//     return (inb(KBD_STATUS) & 1) != 0;
+// }
+
+
+// Эту функцию мы вызываем ИЗ НАШЕГО ИСПРАВЛЕННОГО isr.c при IRQ_KEYBOARD
+void keyboard_handler(void) {
+    // Проверяем, есть ли данные в контроллере (на всякий случай)
+    if ((inb(KBD_STATUS) & 1) == 0) return;
+
+    unsigned char sc = inb(KBD_DATA);
+
+    // Логика обработки расширенного кода 0xE0
+    if (sc == 0xE0) {
+        extended_code = true;
+        return;
+    }
+
+    if (extended_code) {
+        extended_code = false;
+        if (sc & 0x80) {
+            if ((sc & 0x7F) == 0x1D) ctrl_pressed = false;
+            return;
+        }
+        if (sc == 0x1D) { ctrl_pressed = true; return; }
+
+        // Твои стрелочки и спец-клавиши
+        if (sc == 0x4B) kbd_ring_push(-1);
+        if (sc == 0x4D) kbd_ring_push(-3);
+        if (sc == 0x48) kbd_ring_push(-2);
+        if (sc == 0x50) kbd_ring_push(-4);
+        if (sc == 0x53) kbd_ring_push(-5);
+        if (sc == 0x47) kbd_ring_push(-7);
+        if (sc == 0x4F) kbd_ring_push(-8);
+        return;
+    }
+
+    // Обычные скан-коды (отпускание)
+    if (sc & 0x80) {
+        sc &= 0x7F;
+        if (sc == 0x2A || sc == 0x36) shift_pressed = false;
+        if (sc == 0x1D) ctrl_pressed = false;
+        return;
+    }
+
+    // Нажатие модификаторов
+    if (sc == 0x2A || sc == 0x36) { shift_pressed = true; return; }
+    if (sc == 0x1D) { ctrl_pressed = true; return; }
+    if (sc == 0x45) { numlock_on = !numlock_on; return; }
+
+    if (numlock_on && numpad_on[sc]) {
+        kbd_ring_push(numpad_on[sc]);
+        return;
+    }
+
+    // Обычные символы
+    if (sc < 128 && keymap[sc]) {
+        char ch = shift_pressed ? keymap_shift[sc] : keymap[sc];
+        if (ctrl_pressed) {
+            if (ch >= 'a' && ch <= 'z') {
+                if (ch == 'c') sigint_received = true;
+                kbd_ring_push((char)(ch - 'a' + 1));
+                return;
+            }
+            if (ch >= 'A' && ch <= 'Z') {
+                if (ch == 'C') sigint_received = true;
+                kbd_ring_push((char)(ch - 'A' + 1));
+                return;
+            }
+        }
+        kbd_ring_push(ch);
+    }
 }
+
 
 char keyboard_read_char(void) {
     while ((inb(KBD_STATUS) & 1) == 0);
@@ -207,14 +308,20 @@ static void clear_current_input(void) {
 void keyboard_read_line(char* buffer, int max_len) {
     if (max_len <= 1) return;
 
-    input_start = vga_get_cursor();
-    displayed_len = 0;
-    clear_current_input();
-    keyboard_history_reset_nav();
+        input_start = vga_get_cursor();
+        displayed_len = 0;
+        clear_current_input();
+        keyboard_history_reset_nav();
 
-    while (1) {
-        char c = keyboard_read_char();
-        if (c == 0) continue;
+        while (1) {
+            // ЭНЕРГОЭФФЕКТИВНОЕ ОЖИДАНИЕ ПРЕРЫВАНИЯ
+            while (!keyboard_has_key()) {
+                __asm__ __volatile__("hlt"); // Спим, пока прерывание клавиатуры не положит символ в буфер!
+            }
+
+            // Забираем символ из буфера
+            char c = keyboard_getc_from_buffer();
+            if (c == 0) continue;
 
         if (c == '\n') {
             input_buffer[input_len] = '\0';

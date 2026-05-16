@@ -1,6 +1,8 @@
 #include "isr.h"
 #include "../pic/pic.h"
 #include "../../../utils/panic.h"
+#include "../../../drivers/keyboard.h"
+
 
 extern void timer_handler(void);
 
@@ -43,8 +45,15 @@ void isr_handler(registers_t regs) {
 void irq_handler(registers_t regs) {
     uint8_t irq_no = regs.int_no - 32;
 
-    if (irq_no == 0) {
-        timer_handler();
+    switch (irq_no) {
+        case IRQ_TIMER:
+            timer_handler();
+            break;
+        case IRQ_KEYBOARD:
+            keyboard_handler();
+            break;
+        default:
+            break;
     }
 
     pic_send_eoi(irq_no);
