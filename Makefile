@@ -11,14 +11,13 @@ ISO = AL-OS.iso
 comma := ,
 DRIVE_ARG := $(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img$(comma)format=raw)
 
-# Все C файлы
+# Находим ВСЕ файлы на Си
 C_SRCS := $(shell find kernel -name '*.c')
-
-# Превращаем .c -> .o
 C_OBJS := $(C_SRCS:.c=.o)
 
-# ASM
-ASM_OBJS := boot/kernel_entry.o
+# Находим ВСЕ файлы на Ассемблере (и в boot, и в kernel)
+ASM_SRCS := $(shell find boot kernel -name '*.asm')
+ASM_OBJS := $(ASM_SRCS:.asm=.o)
 
 # Все объектники
 OBJS := $(ASM_OBJS) $(C_OBJS)
@@ -31,6 +30,10 @@ boot/kernel_entry.o: boot/kernel_entry.asm
 # Универсальное правило
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# Правило для сборки ЛЮБОГО .asm файла в .o
+%.o: %.asm
+	$(ASM) $(ASFLAGS) $< -o $@
 
 $(TARGET): $(OBJS)
 	$(LD) -T linker.ld -m elf_i386 -o $(TARGET) $(OBJS)
