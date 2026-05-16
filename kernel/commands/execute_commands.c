@@ -64,6 +64,7 @@ int execute_command(char* cmd) {
         }
         beep_pit(f, ms);
     }
+    else if (strcmp(cmd, "crash") == 0) cmd_crash();
     else if (strcmp(cmd, "sysinfo") == 0) cmd_sysinfo();
     else if (strcmp(cmd, "slowfetch") == 0) cmd_slowfetch();
     else if (strcmp(cmd, "uptime") == 0) {

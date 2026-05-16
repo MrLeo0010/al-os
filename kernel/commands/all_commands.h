@@ -22,5 +22,6 @@ void meminfo_cmd();
 void cmd_history();
 void cmd_disks();
 void cmd_fatwrite();
+void cmd_crash();
 
 #endif

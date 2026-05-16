@@ -4,7 +4,7 @@
 #include "../utils/time.h"
 
 
-void init() {
+void init_system_base() {
     vga_clear();
     vga_print_color("Welcome to AL-OS!\n", 0x0A);
     vga_print_color("Type 'help' to see available commands\n\n", 0x0F);
