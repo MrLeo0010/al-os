@@ -12,20 +12,17 @@ comma := ,
 DRIVE_ARG := $(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img$(comma)format=raw)
 
 # Находим ВСЕ файлы на Си
-C_SRCS := $(shell find kernel -name '*.c')
+C_SRCS := $(shell find src/ -name '*.c')
 C_OBJS := $(C_SRCS:.c=.o)
 
-# Находим ВСЕ файлы на Ассемблере (и в boot, и в kernel)
-ASM_SRCS := $(shell find boot kernel -name '*.asm')
+# Находим ВСЕ файлы на Ассемблере (и в boot, и в )
+ASM_SRCS := $(shell find src/ -name '*.asm')
 ASM_OBJS := $(ASM_SRCS:.asm=.o)
 
 # Все объектники
 OBJS := $(ASM_OBJS) $(C_OBJS)
 
 all: $(TARGET)
-
-boot/kernel_entry.o: boot/kernel_entry.asm
-	$(ASM) $(ASFLAGS) $< -o $@
 
 # Универсальное правило
 %.o: %.c
@@ -43,6 +40,9 @@ iso: $(TARGET)
 	cp $(TARGET) iso/boot/kernel.elf
 	printf 'set timeout=1\nset default=0\nmenuentry "Boot Al-OS" {\n    multiboot /boot/kernel.elf\n    boot\n}\n' > iso/boot/grub/grub.cfg
 	grub-mkrescue -o $(ISO) iso
+
+iso_podman:
+	podman run --rm -v "$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
 
 clean-all:
 	rm -f $(OBJS) $(TARGET) $(ISO)
