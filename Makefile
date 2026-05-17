@@ -2,6 +2,8 @@ CC = gcc
 ASM = nasm
 LD = ld
 
+CUR_DIR := $(CURDIR)
+
 CFLAGS = -ffreestanding -O2 -Wall -Wextra -m32 -nostdlib -Ikernel
 ASFLAGS = -f elf32
 
@@ -15,7 +17,7 @@ DRIVE_ARG := $(if $(wildcard fat32_min_4k.img),-drive file=fat32_min_4k.img$(com
 C_SRCS := $(shell find src/ -name '*.c')
 C_OBJS := $(C_SRCS:.c=.o)
 
-# Находим ВСЕ файлы на Ассемблере (и в boot, и в )
+# Находим ВСЕ файлы на Ассемблере
 ASM_SRCS := $(shell find src/ -name '*.asm')
 ASM_OBJS := $(ASM_SRCS:.asm=.o)
 
@@ -40,6 +42,12 @@ iso: $(TARGET)
 	cp $(TARGET) iso/boot/kernel.elf
 	printf 'set timeout=1\nset default=0\nmenuentry "Boot Al-OS" {\n    multiboot /boot/kernel.elf\n    boot\n}\n' > iso/boot/grub/grub.cfg
 	grub-mkrescue -o $(ISO) iso
+
+iso_podman:
+	podman run --rm -v "$$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
+
+iso_docker:
+	docker run --rm -v "$$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
 
 clean-all:
 	rm -f $(OBJS) $(TARGET) $(ISO)
