@@ -38,6 +38,10 @@ int execute_command(char* cmd) {
         if (args[0]) return fs_cd(args);
         return 0;
     }
+    else if (strcmp(cmd, "mkrootfs") == 0) {
+        cmd_mkrootfs();
+        return 0;
+    }
     else if (strcmp(cmd, "pwd") == 0)   { fs_pwd(); return 0; }
     else if (strcmp(cmd, "mkdir") == 0) {
         if (args[0]) return fs_mkdir(args);

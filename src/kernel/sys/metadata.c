@@ -1,12 +1,9 @@
 #include "metadata.h"
 #include "../drivers/vga/vga.h"
 
-// void load_data() {
-
-// }
 const char* VERSION = "0.5.2";
 
-const char* RELEASE_NOTES = "Disks hotfix";
+const char* RELEASE_NOTES = "mkrootfs command";
 
 const char* AL_OS_LOGO[] = {
     "     _    _         ___  ____  ",

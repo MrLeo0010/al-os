@@ -23,5 +23,6 @@ void cmd_history();
 void cmd_disks();
 void cmd_fatwrite();
 void cmd_crash();
+void cmd_mkrootfs(void);
 
 #endif
