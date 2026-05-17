@@ -41,9 +41,6 @@ iso: $(TARGET)
 	printf 'set timeout=1\nset default=0\nmenuentry "Boot Al-OS" {\n    multiboot /boot/kernel.elf\n    boot\n}\n' > iso/boot/grub/grub.cfg
 	grub-mkrescue -o $(ISO) iso
 
-iso_podman:
-	podman run --rm -v "$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
-
 clean-all:
 	rm -f $(OBJS) $(TARGET) $(ISO)
 	rm -rf iso
