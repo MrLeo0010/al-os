@@ -62,25 +62,31 @@ void panic(const char *module, const char *reason, const char *function) {
     int seconds = 10;
         while (seconds >= 0) {
             char buf[32] = "Reboot in ";
-            int i = 10;
-            int t = seconds;
-            if (t == 0) {
-                buf[i++] = '0';
+            int i = 10; // Длина строки "Reboot in "
+
+            // Магия двузначного формата:
+            if (seconds < 10) {
+                buf[i++] = '0';          // Дописываем ведущий ноль
+                buf[i++] = '0' + seconds; // Дописываем саму цифру (0-9)
             } else {
+                // Если число 10 и больше, бьем его на цифры как обычно
                 char tmp[4];
                 int j = 0;
+                int t = seconds;
                 while (t > 0) {
                     tmp[j++] = '0' + (t % 10);
                     t /= 10;
                 }
-                while (j > 0) buf[i++] = tmp[--j];
+                while (j > 0) {
+                    buf[i++] = tmp[--j];
+                }
             }
+
             buf[i++] = 's';
-            buf[i] = 0;
+            buf[i] = 0; // Терминирующий ноль строки
             vga_print_centered(buf, 22, BLUE_BG_WHITE);
 
-            // Заменяем тупой цикл на честную задержку в 1 секунду (1000 мс)
-            panic_sleep_ms(1000);
+            panic_sleep_ms(1000); // Наш честный секундный таймер
 
             seconds--;
         }
