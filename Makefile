@@ -44,10 +44,10 @@ iso: $(TARGET)
 	grub-mkrescue -o $(ISO) iso
 
 iso_podman:
-	podman run --rm -v "$$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
+	podman run --rm -v "$(CURDIR):/build" mrleo0010/al-os-build sh -c "make iso"
 
 iso_docker:
-	docker run --rm -v "$$PWD:/build" mrleo0010/al-os-build sh -c "make iso"
+	docker run --rm -v "$(CURDIR):/build" mrleo0010/al-os-build sh -c "make iso"
 
 clean-all:
 	rm -f $(OBJS) $(TARGET) $(ISO)
