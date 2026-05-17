@@ -4,8 +4,6 @@
 #include "../drivers/vga/colors.h"
 #include "../sys/metadata.h"
 
-
-
 static void slowprint_line(const char* str, uint8_t color, unsigned int delay) {
     uint8_t old = vga_color;
     vga_color = color;

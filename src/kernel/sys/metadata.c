@@ -4,9 +4,9 @@
 // void load_data() {
 
 // }
-const char* VERSION = "0.5.0";
+const char* VERSION = "0.5.2";
 
-const char* RELEASE_NOTES = "v0.5.0 - Internal rewrite & IDT/PIC core integration & interrupt-driven keyboard subsystem";
+const char* RELEASE_NOTES = "Disks hotfix";
 
 const char* AL_OS_LOGO[] = {
     "     _    _         ___  ____  ",
