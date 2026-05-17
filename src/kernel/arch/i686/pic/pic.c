@@ -37,8 +37,19 @@ void pic_remap(int offset1, int offset2) {
     io_wait();
 
     // Возвращаем маски на место
-    outb(PIC1_DATA, a1);
-    outb(PIC2_DATA, a2);
+    // outb(PIC1_DATA, a1);
+    // outb(PIC2_DATA, a2);
+
+
+    // Жестко задаем маски безопасности:
+    // Master PIC: 0xfc (11111100b) -> Разрешены только IRQ0 (таймер) и IRQ1 (клавиатура)
+    // Если в будущем понадобятся прерывания диска (IRQ14), надо будет записать 0xf8 (открыть еще и IRQ2 каскад)
+    outb(PIC1_DATA, 0xFC);
+    io_wait();
+
+    // Slave PIC: 0xff (11111111b) -> Глушим вообще все прерывания на ведомом контроллере
+    outb(PIC2_DATA, 0xFF);
+    io_wait();
 }
 
 void pic_send_eoi(uint8_t irq) {
@@ -46,4 +57,32 @@ void pic_send_eoi(uint8_t irq) {
         outb(PIC2_COMMAND, PIC_EOI);
     }
     outb(PIC1_COMMAND, PIC_EOI);
+}
+
+void pic_set_mask(unsigned char irq_line) {
+    uint16_t port;
+    uint8_t value;
+
+    if (irq_line < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq_line -= 8;
+    }
+    value = inb(port) | (1 << irq_line);
+    outb(port, value);
+}
+
+void pic_clear_mask(unsigned char irq_line) {
+    uint16_t port;
+    uint8_t value;
+
+    if (irq_line < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq_line -= 8;
+    }
+    value = inb(port) & ~(1 << irq_line);
+    outb(port, value);
 }

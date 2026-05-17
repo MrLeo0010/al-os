@@ -33,5 +33,8 @@
 
 void pic_remap(int offset1, int offset2);
 void pic_send_eoi(uint8_t irq);
+void pic_set_mask(unsigned char irq_line);
+void pic_clear_mask(unsigned char irq_line);
+
 
 #endif
