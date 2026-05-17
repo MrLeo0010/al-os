@@ -34,5 +34,4 @@ void cmd_slowfetch(void) {
     slowprint_line("", 0x0B, 50000);
     slowprint_logo();
     slowprint_line("", 0x07, 50000);
-    cmd_sysinfo();
 }
