@@ -1,6 +1,5 @@
 #include "../utils/string.h"
 #include "../drivers/vga/vga.h"
-#include "../kernel.h"
 #include "all_commands.h"
 #include "../drivers/vga/colors.h"
 
@@ -8,6 +7,8 @@
 
 const struct { const char* cmd; const char* desc; } help_table[] = {
     {"help", "Show this help or help <cmd>"},
+    {"aarch", "Show architecture info"},
+    {"cat", "Show in-memory file"},
     {"clear", "Clear screen"},
     {"ls", "List in-memory FS"},
     {"cd", "Change directory"},
@@ -16,7 +17,6 @@ const struct { const char* cmd; const char* desc; } help_table[] = {
     {"rm", "Remove file/dir"},
     {"touch", "Create file in memory FS"},
     {"write", "Write to in-memory file"},
-    {"cat", "Show in-memory file"},
     {"echo", "Echo or redirect"},
     {"cp", "Copy file"},
     {"mv", "Move/Rename file"},
@@ -26,7 +26,6 @@ const struct { const char* cmd; const char* desc; } help_table[] = {
     {"beep", "Play beep"},
     {"sysinfo", "Show system info"},
     {"slowfetch", "Animated banner"},
-    {"aarch", "Show architecture info"},
     {"uptime", "Show uptime"},
     {"meminfo", "Kernel memory info"},
     {"time", "Show RTC time"},
@@ -53,6 +52,8 @@ const struct { const char* cmd; const char* desc; } help_table[] = {
     {"fatinfo", "Show FAT info"},
     {"disks", "Show detected disks"},
     {"fat", "Enter FAT shell mode"},
+    {"mkrootfs", "Create root filesystem on disk"},
+    {"crash", "Trigger kernel panic by dividing by zero"},
 };
 
 
