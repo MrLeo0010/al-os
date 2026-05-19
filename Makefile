@@ -11,7 +11,7 @@ TARGET = kernel.elf
 ISO = AL-OS.iso
 
 comma := ,
-DRIVE_ARG := $(if $(wildcard fat32.img),-drive file=fat32.img$(comma)format=raw(comma)if=ide(comma)index=1)
+DRIVE_ARG := $(if $(wildcard fat32.img),-drive file=fat32.img$(comma)format=raw$(comma)if=ide$(comma)index=1)
 
 # Находим ВСЕ файлы на Си
 C_SRCS := $(shell find src/ -name '*.c')
