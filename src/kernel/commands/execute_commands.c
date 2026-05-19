@@ -43,11 +43,11 @@ static int execute_cmd_aarch(char* args)     { (void)args; cmd_aarch(); return 0
 static int execute_cmd_reboot(char* args)    { (void)args; do_reboot(); return 0; }
 static int execute_cmd_poweroff(char* args)  { (void)args; do_poweroff(); return 0; }
 static int execute_cmd_whoami(char* args)    { (void)args; cmd_whoami(); return 0; }
-static int execute_cmd_date(char* args)      { cmd_date(args); return 0; }
+static int execute_cmd_date()      { cmd_date(); return 0; }
 static int execute_cmd_colorbar(char* args)  { (void)args; cmd_colorbar(); return 0; }
 static int execute_cmd_memtest(char* args)   { (void)args; cmd_memtest(); return 0; }
 static int execute_cmd_history(char* args)   { (void)args; cmd_history(); return 0; }
-static int execute_cmd_mkrootfs(char* args)  { cmd_mkrootfs(args); return 0; }
+static int execute_cmd_mkrootfs()  { cmd_mkrootfs(); return 0; }
 static int execute_cmd_crash(char* args)     { (void)args; cmd_crash(); return 0; }
 
 static int execute_cmd_chusr(char* args) {
