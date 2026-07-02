@@ -15,8 +15,18 @@
 char user[32] = "root";
 long boot_seconds = 0;
 
+extern void rust_kernel_main(void);
 void tests()
 {
+        // 1. Твоя стандартная инициализация систем al-os...
+        // gdt_init();
+        // idt_init();
+
+        // Тест вывода из Си
+        vga_print("C Kernel is running...\n");
+
+        // 2. Вызываем Rust. Он внутри себя дёрнет vga_print() обратно в Си!
+        rust_kernel_main();
 
 }
 
@@ -27,7 +37,6 @@ void kernel_main(void)
     init_idt();
     init_timer(100);
     __asm__ __volatile__("sti");
-    // tests();
 
     init_system_base();
 

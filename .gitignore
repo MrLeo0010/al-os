@@ -3,3 +3,4 @@
 *.img
 *.elf
 *.log
+rust_core/

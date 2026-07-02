@@ -14,48 +14,39 @@ comma := ,
 DRIVE_ARG := $(if $(wildcard fat32.img),-drive file=fat32.img$(comma)format=raw$(comma)if=ide$(comma)index=1)
 
 # Находим ВСЕ файлы на Си
-C_SRCS := $(shell find src/ -name '*.c')
+# Находим ВСЕ файлы на Си
+# ... твои переменные (CC, ASM, LD, CFLAGS, ISO и т.д.) ...
+
+# 1. ИСПРАВЛЯЕМ ПУТИ: ищем исходники там, где они реально лежат (kernel и boot)
+C_SRCS := $(shell find kernel/ -name '*.c')
 C_OBJS := $(C_SRCS:.c=.o)
 
-# Находим ВСЕ файлы на Ассемблере
-ASM_SRCS := $(shell find src/ -name '*.asm')
+# Если у тебя ассемблерные файлы лежат в boot/ и kernel/, ищем в обеих папках
+ASM_SRCS := $(shell find boot/ kernel/ -name '*.asm' 2>/dev/null)
 ASM_OBJS := $(ASM_SRCS:.asm=.o)
 
-# Все объектники
+# Добавляем в общий список объектников те .o файлы, которые уже скомпилированы
+# и лежат в дереве (на случай, если они сироты или компилировались иначе)
+ALL_O_FILES := $(shell find boot/ kernel/ -name '*.o' 2>/dev/null)
 OBJS := $(ASM_OBJS) $(C_OBJS)
 
-all: $(TARGET)
+# ... твои правила сборки (all:, %.o:, $(TARGET):, iso:) ...
 
-# Универсальное правило
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+# Объявляем цели как phony, чтобы make не искал файлы с именами clean/clean-all
+.PHONY: clean clean-all
 
-# Правило для сборки ЛЮБОГО .asm файла в .o
-%.o: %.asm
-	$(ASM) $(ASFLAGS) $< -o $@
-
-$(TARGET): $(OBJS)
-	$(LD) -T linker.ld -m elf_i386 -o $(TARGET) $(OBJS)
-
-iso: $(TARGET)
-	mkdir -p iso/boot/grub
-	cp $(TARGET) iso/boot/kernel.elf
-	printf 'set timeout=1\nset default=0\nmenuentry "Boot Al-OS" {\n    multiboot /boot/kernel.elf\n    boot\n}\n' > iso/boot/grub/grub.cfg
-	grub-mkrescue -o $(ISO) iso
-
-iso_podman:
-	podman run --rm -v "$(CURDIR):/build" mrleo0010/al-os-build sh -c "make iso"
-
-iso_docker:
-	docker run --rm -v "$(CURDIR):/build" mrleo0010/al-os-build sh -c "make iso"
-
-clean-all:
-	rm -f $(OBJS) $(TARGET) $(ISO)
-	rm -rf iso
-
+# Быстрый clean: чистит вообще ВСЕ файлы .o в проекте и бинарник ядра
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(ALL_O_FILES) $(TARGET)
 	rm -rf iso
+
+# Полный clean: чистит объектники, ядро, ISO-образ И запускает очистку проекта на Rust
+clean-all: clean
+	rm -f $(ISO)
+	@if [ -d "rust_core" ]; then \
+		echo "Cleaning Rust target..."; \
+		cd rust_core && cargo clean; \
+	fi
 
 run:
 	qemu-system-i386 \
