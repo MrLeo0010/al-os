@@ -20,7 +20,7 @@ __attribute__((force_align_arg_pointer)) static void task_beta() {
 }
 
 // Точка входа для твоей команды шелла
-void cmd_test(int argc, char** argv) {
+void cmd_test() {
     // Инициализируем планировщик
     init_multitasking();
 

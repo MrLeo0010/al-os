@@ -31,9 +31,9 @@ int create_task(void (*entry_point)()) {
 
             ctx->eax = 0; ctx->ecx = 0; ctx->edx = 0; ctx->ebx = 0;
             ctx->ebp = 0; ctx->esi = 0; ctx->edi = 0;
-            ctx->eip = (uint32_t)entry_point;
+            ctx->eip = (uint32_t)(uintptr_t)entry_point;
 
-            t->esp = (uint32_t)stack_top;
+            t->esp = (uint32_t)(uintptr_t)stack_top;
             return i;
         }
     }

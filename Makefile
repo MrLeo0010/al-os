@@ -50,7 +50,7 @@ iso_docker:
 	docker run --rm -v "$(CURDIR):/build" mrleo0010/al-os-build sh -c "make iso"
 
 clean:
-	rm -f $(ALL_O_FILES) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 	rm -rf iso
 
 clean-all: clean
