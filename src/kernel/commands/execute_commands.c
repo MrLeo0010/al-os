@@ -192,6 +192,15 @@ static int execute_cmd_net_test(char* args) {
     return 0;
 }
 
+// Тестирование
+static int execute_cmd_test(char* args) {
+    char* argv[2];
+    int argc = 1;
+    argv[0] = args;
+    cmd_test(argc, argv);
+    return 0;
+}
+
 /* ========================================================================== */
 /* Таблица команд                              */
 /* ========================================================================== */
@@ -260,6 +269,9 @@ static const command_t commands[] = {
     {"netstat",     execute_cmd_netstat},
     {"net_test",    execute_cmd_net_test},
     {"ping",        execute_cmd_ping},
+
+    // Тестирование
+    {"test",        execute_cmd_test},
 };
 
 #define COMMANDS_COUNT (sizeof(commands) / sizeof(commands[0]))

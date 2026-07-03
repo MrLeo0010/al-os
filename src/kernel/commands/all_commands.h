@@ -27,5 +27,6 @@ void cmd_mkrootfs(void);
 void pci_scan_bus();
 void net_test();
 void ping_cmd(char* args);
+void cmd_test(int argc, char** argv);
 
 #endif

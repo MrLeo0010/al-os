@@ -18,15 +18,6 @@ long boot_seconds = 0;
 extern void rust_kernel_main(void);
 void tests()
 {
-        // 1. Твоя стандартная инициализация систем al-os...
-        // gdt_init();
-        // idt_init();
-
-        // Тест вывода из Си
-        vga_print("C Kernel is running...\n");
-
-        // 2. Вызываем Rust. Он внутри себя дёрнет vga_print() обратно в Си!
-        rust_kernel_main();
 
 }
 
