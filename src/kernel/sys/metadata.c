@@ -1,9 +1,9 @@
 #include "metadata.h"
 #include "../drivers/vga/vga.h"
 
-const char* VERSION = "0.5.2";
+const char* VERSION = "0.6.0";
 
-const char* RELEASE_NOTES = "mkrootfs command";
+const char* RELEASE_NOTES = "Multitasking Core";
 
 const char* AL_OS_LOGO[] = {
     "     _    _         ___  ____  ",
